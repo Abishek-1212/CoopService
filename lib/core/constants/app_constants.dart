@@ -6,6 +6,7 @@ class AppConstants {
   static const String usersCollection = 'users';
   static const String cooperativesCollection = 'cooperatives';
   static const String servicesCollection = 'services';
+  static const String categoriesCollection = 'categories';
   static const String cooperativeJoinRequestsCollection = 'cooperative_join_requests';
   static const String bookingsCollection = 'bookings';
 

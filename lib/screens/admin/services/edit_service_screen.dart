@@ -3,8 +3,11 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../models/category_model.dart';
 import '../../../models/service_model.dart';
+import '../../../services/category_service.dart';
 import '../../../services/service_management_service.dart';
+import 'widgets/category_dialog.dart';
 
 class EditServiceScreen extends StatefulWidget {
   final ServiceModel service;
@@ -22,6 +25,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   final _formKey = GlobalKey<FormState>();
   final ServiceManagementService _serviceManagementService =
       ServiceManagementService();
+  final CategoryService _categoryService = CategoryService();
 
   late TextEditingController _nameController;
   late TextEditingController _shortDescController;
@@ -47,11 +51,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     _skillsController =
         TextEditingController(text: widget.service.requiredSkills.join(', '));
 
-    _selectedCategory =
-        AppConstants.serviceCategories.contains(widget.service.category)
-            ? widget.service.category
-            : AppConstants.serviceCategories.first;
-
+    _selectedCategory = widget.service.category;
     _status = widget.service.status;
   }
 
@@ -209,35 +209,128 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                 ),
                 const SizedBox(height: 14),
 
-                // Category Dropdown
-                const Text(
-                  'Service Category *',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                // Category Dropdown with Quick-Add Action
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Service Category (Trade) *',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final created = await CategoryDialog.show(context);
+                        if (created != null && mounted) {
+                          setState(() {
+                            _selectedCategory = created.name;
+                          });
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_rounded,
+                                size: 16, color: AppColors.greenForest),
+                            SizedBox(width: 2),
+                            Text(
+                              'New Category',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.greenForest,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedCategory,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.category_rounded,
-                        color: AppColors.textSecondary),
-                  ),
-                  items: AppConstants.serviceCategories.map((cat) {
-                    return DropdownMenuItem(
-                      value: cat,
-                      child: Text(cat, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedCategory = val;
-                      });
+                StreamBuilder<List<CategoryModel>>(
+                  stream: _categoryService.streamActiveCategories(),
+                  builder: (context, catSnap) {
+                    final categories = catSnap.data ?? [];
+                    final names = categories.map((c) => c.name).toList();
+
+                    // Ensure existing category is selectable even if newly created or legacy
+                    if (!names.contains(_selectedCategory) && _selectedCategory.isNotEmpty) {
+                      names.insert(0, _selectedCategory);
                     }
+
+                    if (names.isEmpty) {
+                      return OutlinedButton.icon(
+                        onPressed: () async {
+                          final created = await CategoryDialog.show(context);
+                          if (created != null && mounted) {
+                            setState(() {
+                              _selectedCategory = created.name;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.add_rounded,
+                            color: AppColors.greenForest),
+                        label: const Text(
+                          'No categories yet. Click to create one',
+                          style: TextStyle(color: AppColors.greenForest),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(color: Color(0xFFDCE8E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return DropdownButtonFormField<String>(
+                      initialValue: _selectedCategory,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.category_rounded,
+                            color: AppColors.textSecondary),
+                      ),
+                      items: names.map((catName) {
+                        final catObj = categories.cast<CategoryModel?>().firstWhere(
+                              (c) => c?.name == catName,
+                              orElse: () => null,
+                            );
+                        final icon = catObj?.iconData ?? CategoryModel.getIconForName(catName);
+
+                        return DropdownMenuItem(
+                          value: catName,
+                          child: Row(
+                            children: [
+                              Icon(icon, size: 18, color: AppColors.greenForest),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  catName,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedCategory = val;
+                          });
+                        }
+                      },
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Please select a category' : null,
+                    );
                   },
                 ),
                 const SizedBox(height: 24),

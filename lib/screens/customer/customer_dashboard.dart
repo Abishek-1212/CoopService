@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/app_card.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../models/booking_model.dart';
 import '../../models/user_model.dart';
@@ -13,6 +12,7 @@ import 'tabs/customer_alerts_tab.dart';
 import 'tabs/customer_bookings_tab.dart';
 import 'tabs/customer_home_tab.dart';
 import 'tabs/customer_services_tab.dart';
+import '../../core/widgets/floating_pill_nav_bar.dart';
 
 class CustomerDashboard extends StatefulWidget {
   const CustomerDashboard({super.key});
@@ -46,12 +46,26 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setModalState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(
-            children: const [
-              Icon(Icons.edit_note_rounded, color: AppColors.primary),
-              SizedBox(width: 8),
-              Text('Edit Profile'),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF8F3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFD4E6DC)),
+                ),
+                child: const Icon(Icons.edit_note_rounded, color: AppColors.greenForest, size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Edit Profile',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.greenDeep),
+                ),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -85,13 +99,18 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               ],
             ),
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.textSecondary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
-            ElevatedButton(
-              onPressed: isSaving
+            _BounceButton(
+              onTap: isSaving
                   ? null
                   : () async {
                       setModalState(() => isSaving = true);
@@ -110,9 +129,17 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                         if (dialogCtx.mounted) {
                           Navigator.pop(dialogCtx);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profile updated successfully!'),
-                              backgroundColor: AppColors.statusVerified,
+                            SnackBar(
+                              content: const Row(
+                                children: [
+                                  Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Profile updated successfully!'),
+                                ],
+                              ),
+                              backgroundColor: AppColors.greenForest,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                           );
                         }
@@ -120,18 +147,39 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                         setModalState(() => isSaving = false);
                         if (dialogCtx.mounted) {
                           ScaffoldMessenger.of(dialogCtx).showSnackBar(
-                            SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.statusError),
+                            SnackBar(
+                              content: Text('Error: $e'),
+                              backgroundColor: AppColors.statusError,
+                              behavior: SnackBarBehavior.floating,
+                            ),
                           );
                         }
                       }
                     },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.greenForest],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x330F766E),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: isSaving
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
               ),
-              child: isSaving
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Save Changes'),
             ),
           ],
         ),
@@ -146,83 +194,116 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     if (user == null) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: AppColors.backgroundMildGreen,
+        body: Center(child: CircularProgressIndicator(color: AppColors.greenForest)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFDCE7E1), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0C064E3B),
+                    offset: Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.handshake_rounded,
-                color: AppColors.primary,
-                size: 22,
+                color: AppColors.greenForest,
+                size: 20,
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            const Flexible(
               child: Text(
                 AppConstants.appName,
-                style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.3),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                  color: AppColors.greenForest,
+                  letterSpacing: -0.3,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
-            tooltip: 'Alerts',
-            onPressed: () => _onNavigateTab(3),
+          _BounceButton(
+            onTap: () => _onNavigateTab(3),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFDCE7E1)),
+              ),
+              child: const Icon(Icons.notifications_none_rounded, color: AppColors.greenDeep, size: 20),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.statusError),
-            tooltip: 'Sign Out',
-            onPressed: () => authProvider.signOut(),
+          _BounceButton(
+            onTap: () => authProvider.signOut(),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(4, 8, 14, 8),
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF1F2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFECDD3)),
+              ),
+              child: const Icon(Icons.logout_rounded, color: AppColors.statusError, size: 20),
+            ),
           ),
         ],
       ),
       body: _buildBody(user),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (idx) {
+      bottomNavigationBar: FloatingPillNavBar(
+        currentIndex: _currentIndex,
+        onTap: (idx) {
           setState(() {
             _currentIndex = idx;
             if (idx != 2) _selectedCategoryFilter = null;
           });
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
+        items: const [
+          FloatingNavItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home_rounded,
             label: 'Home',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today_rounded),
+          FloatingNavItem(
+            icon: Icons.calendar_today_outlined,
+            activeIcon: Icons.calendar_today_rounded,
             label: 'Bookings',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            selectedIcon: Icon(Icons.grid_view_rounded),
+          FloatingNavItem(
+            icon: Icons.grid_view_outlined,
+            activeIcon: Icons.grid_view_rounded,
             label: 'Services',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_outlined),
-            selectedIcon: Icon(Icons.notifications_rounded),
+          FloatingNavItem(
+            icon: Icons.notifications_outlined,
+            activeIcon: Icons.notifications_rounded,
             label: 'Alerts',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
+          FloatingNavItem(
+            icon: Icons.person_outline,
+            activeIcon: Icons.person_rounded,
             label: 'Profile',
           ),
         ],
@@ -264,21 +345,54 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
       child: Column(
         children: [
-          const SizedBox(height: 8),
-
           // Avatar & Name Card
-          AppCard(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0E064E3B),
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 38,
-                  backgroundColor: AppColors.primaryContainer,
-                  child: Text(
-                    user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'C',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 32, color: AppColors.primary),
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE8F6EE), Color(0xFFD2EEDC)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFBCE0CC), width: 2),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x18047857),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'C',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 32,
+                        color: AppColors.greenForest,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -291,31 +405,57 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                   user.email,
                   style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFFEFF8F3),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFD4E6DC)),
                   ),
-                  child: const Text(
-                    'Customer Member',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified_rounded, size: 13, color: AppColors.greenEmerald),
+                      SizedBox(width: 5),
+                      Text(
+                        'Verified Customer Member',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.greenForest),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 14),
-                OutlinedButton.icon(
-                  onPressed: () => _showEditProfileDialog(user),
-                  icon: const Icon(Icons.edit_outlined, size: 16),
-                  label: const Text('Edit Profile Details'),
-                  style: OutlinedButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
+                const SizedBox(height: 16),
+                _BounceButton(
+                  onTap: () => _showEditProfileDialog(user),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F8F5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFD4E6DC)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.edit_outlined, size: 15, color: AppColors.greenForest),
+                        SizedBox(width: 6),
+                        Text(
+                          'Edit Profile Details',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.greenForest,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Live Activity Stats from Firestore
           StreamBuilder<List<BookingModel>>(
@@ -328,71 +468,84 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
               return Row(
                 children: [
-                  Expanded(child: _buildStatTile('Total Bookings', '$totalCount', Icons.receipt_long_rounded, AppColors.primary)),
+                  Expanded(child: _buildStatTile('Total Bookings', '$totalCount', Icons.receipt_long_rounded, AppColors.greenForest)),
                   const SizedBox(width: 10),
                   Expanded(child: _buildStatTile('Active Orders', '$activeCount', Icons.pending_actions_rounded, AppColors.statusPending)),
                   const SizedBox(width: 10),
-                  Expanded(child: _buildStatTile('Completed', '$completedCount', Icons.task_alt_rounded, AppColors.statusVerified)),
+                  Expanded(child: _buildStatTile('Completed', '$completedCount', Icons.task_alt_rounded, AppColors.greenEmerald)),
                 ],
               );
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           // Contact & Location Details Card
-          AppCard(
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0E064E3B),
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Saved Information',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                const Row(
+                  children: [
+                    Icon(Icons.contact_mail_outlined, size: 18, color: AppColors.greenForest),
+                    SizedBox(width: 8),
+                    Text(
+                      'Saved Information',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.phone_outlined, color: AppColors.primary),
-                  title: const Text('Phone Number', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  subtitle: Text(user.phone.isNotEmpty ? user.phone : 'Not provided', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.location_on_outlined, color: AppColors.primary),
-                  title: const Text('City & Region', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  subtitle: Text(user.location.isNotEmpty ? user.location : 'Coimbatore, Tamil Nadu', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                ),
+                const SizedBox(height: 12),
+                _buildInfoRow(Icons.phone_outlined, 'Phone Number', user.phone.isNotEmpty ? user.phone : 'Not provided'),
+                const Divider(height: 16, color: Color(0xFFE8F1EC)),
+                _buildInfoRow(Icons.location_on_outlined, 'City & Region', user.location.isNotEmpty ? user.location : 'Coimbatore, Tamil Nadu'),
                 if (user.fullAddress != null && user.fullAddress!.isNotEmpty) ...[
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.home_outlined, color: AppColors.primary),
-                    title: const Text('Service Address', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    subtitle: Text(user.fullAddress!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                  ),
+                  const Divider(height: 16, color: Color(0xFFE8F1EC)),
+                  _buildInfoRow(Icons.home_outlined, 'Service Address', user.fullAddress!),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // Community Trust Guarantee
+          // Community Trust Guarantee Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0E064E3B),
+                  blurRadius: 14,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.statusVerifiedBg,
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFD1FAE5),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
                   ),
-                  child: const Icon(Icons.verified_user_rounded, color: AppColors.statusVerified, size: 24),
+                  child: const Icon(Icons.verified_user_rounded, color: AppColors.greenForest, size: 24),
                 ),
                 const SizedBox(width: 14),
                 const Expanded(
@@ -401,12 +554,12 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                     children: [
                       Text(
                         'Cooperative Protection Guarantee',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
                       ),
                       SizedBox(height: 2),
                       Text(
-                        'All services are backed by verified government-registered Cooperative Societies ensuring transparent and fair labor practices.',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        'All services are backed by government-registered Cooperative Societies ensuring transparent and fair labor practices.',
+                        style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary, height: 1.35),
                       ),
                     ],
                   ),
@@ -414,49 +567,148 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
 
-          // Sign Out Button
-          ElevatedButton.icon(
-            onPressed: () => authProvider.signOut(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.statusErrorBg,
-              foregroundColor: AppColors.statusError,
-              minimumSize: const Size(double.infinity, 48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          // Sign Out Tactile Button
+          _BounceButton(
+            onTap: () => authProvider.signOut(),
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF1F2),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFECDD3)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x18EF4444),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded, size: 18, color: AppColors.statusError),
+                  SizedBox(width: 8),
+                  Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      color: AppColors.statusError,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            icon: const Icon(Icons.logout_rounded, size: 18),
-            label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
+  Widget _buildInfoRow(IconData icon, String title, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF8F3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: AppColors.greenForest),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildStatTile(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A064E3B),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: color),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: color),
           ),
           const SizedBox(height: 2),
           Text(
             title,
-            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 10.5, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Tactile bounce button with physical press micro-interaction
+class _BounceButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _BounceButton({
+    required this.child,
+    this.onTap,
+  });
+
+  @override
+  State<_BounceButton> createState() => _BounceButtonState();
+}
+
+class _BounceButtonState extends State<_BounceButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: widget.onTap != null ? (_) => setState(() => _isPressed = true) : null,
+      onTapUp: widget.onTap != null ? (_) => setState(() => _isPressed = false) : null,
+      onTapCancel: widget.onTap != null ? () => setState(() => _isPressed = false) : null,
+      onTap: widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.94 : 1.0,
+        duration: const Duration(milliseconds: 110),
+        curve: Curves.easeOutCubic,
+        child: widget.child,
       ),
     );
   }

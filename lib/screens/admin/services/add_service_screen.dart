@@ -3,8 +3,11 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../models/category_model.dart';
 import '../../../models/service_model.dart';
+import '../../../services/category_service.dart';
 import '../../../services/service_management_service.dart';
+import 'widgets/category_dialog.dart';
 
 class AddServiceScreen extends StatefulWidget {
   const AddServiceScreen({super.key});
@@ -17,6 +20,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final _formKey = GlobalKey<FormState>();
   final ServiceManagementService _serviceManagementService =
       ServiceManagementService();
+  final CategoryService _categoryService = CategoryService();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shortDescController = TextEditingController();
@@ -24,7 +28,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _priceRangeController = TextEditingController();
   final TextEditingController _skillsController = TextEditingController();
 
-  String _selectedCategory = AppConstants.serviceCategories.first;
+  String? _selectedCategory;
   String _status = AppConstants.statusActive;
   bool _isLoading = false;
   String? _errorMessage;
@@ -65,7 +69,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           .where((s) => s.isNotEmpty)
           .toList();
 
-      final now = DateTime.now();
       final newService = ServiceModel(
         id: '',
         name: name,
@@ -73,14 +76,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         description: _detailedDescController.text.trim().isNotEmpty
             ? _detailedDescController.text.trim()
             : null,
-        category: _selectedCategory,
-        requiredSkills: skillsList,
+        category: _selectedCategory ?? 'General',
         priceRange: _priceRangeController.text.trim().isNotEmpty
             ? _priceRangeController.text.trim()
             : null,
+        requiredSkills: skillsList,
         status: _status,
-        createdAt: now,
-        updatedAt: now,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
 
       await _serviceManagementService.createService(newService);
@@ -179,34 +182,129 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 ),
                 const SizedBox(height: 14),
 
-                // Category Dropdown
-                const Text(
-                  'Service Category *',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                // Category Dropdown with Quick-Add Action
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Service Category (Trade) *',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final created = await CategoryDialog.show(context);
+                        if (created != null && mounted) {
+                          setState(() {
+                            _selectedCategory = created.name;
+                          });
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_rounded,
+                                size: 16, color: AppColors.greenForest),
+                            SizedBox(width: 2),
+                            Text(
+                              'New Category',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.greenForest,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedCategory,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.category_rounded, color: AppColors.textSecondary),
-                  ),
-                  items: AppConstants.serviceCategories.map((cat) {
-                    return DropdownMenuItem(
-                      value: cat,
-                      child: Text(cat, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedCategory = val;
-                      });
+                StreamBuilder<List<CategoryModel>>(
+                  stream: _categoryService.streamActiveCategories(),
+                  builder: (context, catSnap) {
+                    final categories = catSnap.data ?? [];
+                    final names = categories.map((c) => c.name).toList();
+
+                    if (_selectedCategory == null ||
+                        (!names.contains(_selectedCategory) && names.isNotEmpty)) {
+                      if (names.isNotEmpty) {
+                        _selectedCategory = names.first;
+                      }
                     }
+
+                    if (names.isEmpty) {
+                      return OutlinedButton.icon(
+                        onPressed: () async {
+                          final created = await CategoryDialog.show(context);
+                          if (created != null && mounted) {
+                            setState(() {
+                              _selectedCategory = created.name;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.add_rounded,
+                            color: AppColors.greenForest),
+                        label: const Text(
+                          'No categories yet. Click to create one',
+                          style: TextStyle(color: AppColors.greenForest),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(color: Color(0xFFDCE8E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final currentValue = names.contains(_selectedCategory)
+                        ? _selectedCategory
+                        : names.first;
+
+                    return DropdownButtonFormField<String>(
+                      initialValue: currentValue,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.category_rounded,
+                            color: AppColors.textSecondary),
+                      ),
+                      items: categories.map((cat) {
+                        return DropdownMenuItem(
+                          value: cat.name,
+                          child: Row(
+                            children: [
+                              Icon(cat.iconData,
+                                  size: 18, color: AppColors.greenForest),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  cat.name,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedCategory = val;
+                          });
+                        }
+                      },
+                      validator: (val) =>
+                          val == null || val.isEmpty ? 'Please select a category' : null,
+                    );
                   },
                 ),
                 const SizedBox(height: 24),

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/app_image_helper.dart';
-import '../../../core/widgets/app_card.dart';
-import '../../../models/cooperative_model.dart';
+import '../../../models/booking_model.dart';
+import '../../../models/category_model.dart';
 import '../../../models/service_model.dart';
 import '../../../models/user_model.dart';
-import '../../../services/cooperative_service.dart';
-import '../../../services/firestore_service.dart';
+import '../../../services/booking_service.dart';
+import '../../../services/category_service.dart';
 import '../../../services/service_management_service.dart';
 import '../widgets/service_booking_dialog.dart';
 
@@ -27,21 +26,12 @@ class CustomerHomeTab extends StatefulWidget {
 
 class _CustomerHomeTabState extends State<CustomerHomeTab> {
   final ServiceManagementService _serviceService = ServiceManagementService();
-  final CooperativeService _cooperativeService = CooperativeService();
-  final FirestoreService _firestoreService = FirestoreService();
-
+  final CategoryService _categoryService = CategoryService();
+  final BookingService _bookingService = BookingService();
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _quickCategories = [
-    {'name': 'Electrician', 'icon': Icons.bolt_rounded, 'color': Color(0xFFFFF3E0), 'iconColor': Color(0xFFE65100)},
-    {'name': 'Plumber', 'icon': Icons.plumbing_rounded, 'color': Color(0xFFE1F5FE), 'iconColor': Color(0xFF0288D1)},
-    {'name': 'Cleaning', 'icon': Icons.cleaning_services_rounded, 'color': Color(0xFFE8F5E9), 'iconColor': Color(0xFF2E7D32)},
-    {'name': 'Carpenter', 'icon': Icons.carpenter_rounded, 'color': Color(0xFFEFEBE9), 'iconColor': Color(0xFF5D4037)},
-    {'name': 'Painter', 'icon': Icons.format_paint_rounded, 'color': Color(0xFFF3E5F5), 'iconColor': Color(0xFF7B1FA2)},
-    {'name': 'Appliance', 'icon': Icons.tv_rounded, 'color': Color(0xFFEDE7F6), 'iconColor': Color(0xFF512DA8)},
-    {'name': 'Gardening', 'icon': Icons.yard_rounded, 'color': Color(0xFFF1F8E9), 'iconColor': Color(0xFF558B2F)},
-    {'name': 'Locksmith', 'icon': Icons.lock_reset_rounded, 'color': Color(0xFFFFEBEE), 'iconColor': Color(0xFFC62828)},
-  ];
+  String _searchQuery = '';
+  String? _selectedCategory;
 
   @override
   void dispose() {
@@ -49,513 +39,860 @@ class _CustomerHomeTabState extends State<CustomerHomeTab> {
     super.dispose();
   }
 
+  IconData _getCategoryIcon(String category, [List<CategoryModel>? categoriesList]) {
+    if (categoriesList != null) {
+      for (var c in categoriesList) {
+        if (c.name.toLowerCase() == category.toLowerCase()) {
+          return c.iconData;
+        }
+      }
+    }
+    return CategoryModel.getIconForName(category);
+  }
+
+  String _getServiceRating(int index) {
+    const ratings = ['4.9', '4.8', '4.9', '4.7', '5.0', '4.8'];
+    return ratings[index % ratings.length];
+  }
+
+  int _getServiceReviewCount(int index) {
+    const counts = [128, 94, 156, 82, 210, 67];
+    return counts[index % counts.length];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final String displayName = widget.customer.fullName.trim().isNotEmpty
+        ? widget.customer.fullName.trim().split(' ').first
+        : 'Customer';
+    final String location = widget.customer.location.trim().isNotEmpty
+        ? widget.customer.location.trim()
+        : 'Coimbatore, Tamil Nadu';
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       body: RefreshIndicator(
+        color: AppColors.greenForest,
         onRefresh: () async => setState(() {}),
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          children: [
-            // 1. Customer Greeting & Location Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: AppColors.primaryContainer,
-                    child: Text(
-                      widget.customer.fullName.isNotEmpty ? widget.customer.fullName[0].toUpperCase() : 'C',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hello, ${widget.customer.fullName} 👋',
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on_rounded, size: 13, color: AppColors.primary),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                widget.customer.location.isNotEmpty ? widget.customer.location : 'Coimbatore, Tamil Nadu',
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+        child: StreamBuilder<List<CategoryModel>>(
+          stream: _categoryService.streamActiveCategories(),
+          builder: (context, catSnapshot) {
+            final dynamicCategories = catSnapshot.data ?? [];
+
+            return StreamBuilder<List<ServiceModel>>(
+              stream: _serviceService.streamActiveServices(),
+              builder: (context, servicesSnapshot) {
+                final allServices = servicesSnapshot.data ?? [];
+
+                // Extract distinct trades / categories dynamically
+                final List<String> adminCategories = [];
+                if (dynamicCategories.isNotEmpty) {
+                  for (var c in dynamicCategories) {
+                    adminCategories.add(c.name);
+                  }
+                } else {
+                  for (var s in allServices) {
+                    final cat = s.category.trim();
+                    if (cat.isNotEmpty && !adminCategories.contains(cat)) {
+                      adminCategories.add(cat);
+                    }
+                  }
+                  if (adminCategories.isEmpty) {
+                    adminCategories.addAll([
+                      'Electrician',
+                      'Plumber',
+                      'Cleaning',
+                      'Carpenter',
+                      'Painter',
+                      'Appliance',
+                      'Gardening',
+                      'Locksmith',
+                    ]);
+                  }
+                }
+
+            // Filter services by search query or selected category
+            List<ServiceModel> displayedServices = allServices;
+            if (_searchQuery.isNotEmpty) {
+              displayedServices = displayedServices.where((s) {
+                final name = s.name.toLowerCase();
+                final cat = s.category.toLowerCase();
+                final desc = (s.description ?? '').toLowerCase();
+                return name.contains(_searchQuery) ||
+                    cat.contains(_searchQuery) ||
+                    desc.contains(_searchQuery);
+              }).toList();
+            } else if (_selectedCategory != null) {
+              displayedServices = displayedServices.where((s) {
+                return s.category.toLowerCase() == _selectedCategory!.toLowerCase();
+              }).toList();
+            }
+
+            return ListView(
+              padding: const EdgeInsets.only(top: 8, bottom: 90),
+              children: [
+                // 1. Header: Greeting & Location Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFDCE7E1), width: 1),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.neuDarkShadow,
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 2. Search Field
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: InkWell(
-                onTap: () => widget.onNavigateTab(2), // jump to services tab
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.search_rounded, color: AppColors.textTertiary, size: 20),
-                      SizedBox(width: 12),
+                        child: Center(
+                          child: Text(
+                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'C',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: AppColors.greenForest,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          'Search electrician, plumber, cleaner...',
-                          style: TextStyle(color: AppColors.textTertiary, fontSize: 13),
-                          overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hi, $displayName',
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 1),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_rounded,
+                                  size: 11,
+                                  color: AppColors.greenForest,
+                                ),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    location,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
-            // 3. Hero Promotional Banner
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2563EB).withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'COMMUNITY BACKED',
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Trusted Local Cooperative Services',
-                            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold, height: 1.2),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Verified professionals. Regulated fair pricing. Zero hidden fees.',
-                            style: TextStyle(color: Color(0xFFDBEAFE), fontSize: 12),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () => widget.onNavigateTab(2),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF1E3A8A),
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Book a Service', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ),
-                        ],
+                // 2. Search Bar (Fixed inner white rectangle artifact with ClipRRect & transparent fill)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _searchQuery.isNotEmpty
+                            ? AppColors.greenForest
+                            : const Color(0xFFD4E2DA),
+                        width: 1.0,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 36),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 4. Quick Categories Row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Explore by Trade',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => widget.onNavigateTab(2),
-                    child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 96,
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                scrollDirection: Axis.horizontal,
-                itemCount: _quickCategories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 14),
-                itemBuilder: (context, index) {
-                  final cat = _quickCategories[index];
-                  return InkWell(
-                    onTap: () => widget.onNavigateTab(2, categoryFilter: cat['name']),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 58,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: cat['color'] as Color,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(cat['icon'] as IconData, color: cat['iconColor'] as Color, size: 28),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-2, -2),
+                          blurRadius: 5,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          cat['name'] as String,
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                        BoxShadow(
+                          color: AppColors.neuDarkShadow,
+                          offset: Offset(2, 3),
+                          blurRadius: 8,
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 5. Featured / Popular Services (Live from Firestore)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Popular Household Services',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => widget.onNavigateTab(2),
-                    child: const Text('See Directory', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            StreamBuilder<List<ServiceModel>>(
-              stream: _serviceService.streamActiveServices(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                }
-
-                final services = snapshot.data ?? [];
-                if (services.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Text(
-                      'No active services listed yet.',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                    ),
-                  );
-                }
-
-                return SizedBox(
-                  height: 200,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: services.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 14),
-                    itemBuilder: (context, index) {
-                      final service = services[index];
-                      return _buildServiceCard(service);
-                    },
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 28),
-
-            // 6. Registered Local Cooperative Societies (Live from Firestore)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: const [
-                  Icon(Icons.apartment_rounded, color: AppColors.primary, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Local Cooperative Societies',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            StreamBuilder<List<CooperativeModel>>(
-              stream: _cooperativeService.streamCooperatives(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)));
-                }
-
-                final coops = (snapshot.data ?? []).where((c) => c.isActive).toList();
-                if (coops.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Text('No cooperative societies available right now.', style: TextStyle(color: AppColors.textSecondary)),
-                  );
-                }
-
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: coops.length > 3 ? 3 : coops.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final coop = coops[index];
-                    return AppCard(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryContainer,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.groups_rounded, color: AppColors.primary, size: 24),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: TextField(
+                        controller: _searchController,
+                        cursorColor: AppColors.greenForest,
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val.trim().toLowerCase();
+                          });
+                        },
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search services, electrician, repairs...',
+                          hintStyle: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textTertiary,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  coop.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Reg: ${coop.registrationNumber} • ${coop.district ?? "District"}',
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Area: ${coop.primaryServiceArea}',
-                                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: AppColors.greenForest,
+                            size: 20,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppColors.statusVerifiedBg,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text('Registered', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.statusVerified)),
-                          ),
-                        ],
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondary),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                )
+                              : null,
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                        ),
                       ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Active Booking Card (Only shown if booking exists!)
+                StreamBuilder<List<BookingModel>>(
+                  stream: _bookingService.streamCustomerBookings(widget.customer.uid),
+                  builder: (context, bookingSnapshot) {
+                    if (!bookingSnapshot.hasData) return const SizedBox.shrink();
+                    final activeBookings = bookingSnapshot.data!.where((b) {
+                      return b.status == AppConstants.bookingPending ||
+                          b.status == AppConstants.bookingConfirmed ||
+                          b.status == AppConstants.bookingInProgress;
+                    }).toList();
+
+                    if (activeBookings.isEmpty) return const SizedBox.shrink();
+                    final activeBooking = activeBookings.first;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                      child: _buildActiveBookingCard(activeBooking),
                     );
                   },
-                );
-              },
-            ),
-            const SizedBox(height: 28),
+                ),
 
-            // 7. Verified Society Workers (Live from Firestore)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: const [
-                  Icon(Icons.verified_user_rounded, color: AppColors.statusVerified, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Verified Society Workers',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                // 4. Unified Cooperative Trust & Guarantee Card
+                _buildTrustGuaranteeCard(),
+                const SizedBox(height: 24),
+
+                // 5. Explore by Trade Section (Dynamic Admin Services Categories)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Explore by Trade',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (_selectedCategory != null)
+                        GestureDetector(
+                          onTap: () => setState(() => _selectedCategory = null),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.greenMint.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  _selectedCategory!,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.greenDeep,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.close_rounded, size: 12, color: AppColors.greenDeep),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            StreamBuilder<List<AppUser>>(
-              stream: _firestoreService.streamAllWorkers(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator(strokeWidth: 2)));
-                }
+                ),
+                const SizedBox(height: 12),
 
-                final workers = (snapshot.data ?? []).where((w) {
-                  return w.membershipStatus == AppConstants.membershipApproved ||
-                      w.verificationStatus == AppConstants.statusVerified;
-                }).toList();
-
-                if (workers.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Text('Workers are completing verification.', style: TextStyle(color: AppColors.textSecondary)),
-                  );
-                }
-
-                return SizedBox(
-                  height: 160,
+                // Dynamic Trade Horizontal Squircles
+                SizedBox(
+                  height: 94,
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     scrollDirection: Axis.horizontal,
-                    itemCount: workers.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 14),
+                    itemCount: adminCategories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
-                      final worker = workers[index];
-                      return Container(
-                        width: 220,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: AppColors.primaryContainer,
-                                  backgroundImage: AppImageHelper.getImageProvider(worker.profilePhotoUrl),
-                                  child: worker.profilePhotoUrl == null
-                                      ? Text(worker.fullName.isNotEmpty ? worker.fullName[0].toUpperCase() : 'W')
-                                      : null,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        worker.fullName,
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        worker.serviceCategory ?? 'Professional',
-                                        style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                      final catName = adminCategories[index];
+                      final bool isSelected = _selectedCategory == catName;
+                      final IconData icon = _getCategoryIcon(catName, dynamicCategories);
+
+                      return _BounceButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedCategory = isSelected ? null : catName;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: 68,
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.greenMint.withValues(alpha: 0.35)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.greenForest
+                                        : const Color(0xFFE0EBE4),
+                                    width: isSelected ? 1.5 : 1.0,
                                   ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: Offset(-2, -2),
+                                      blurRadius: 4,
+                                    ),
+                                    BoxShadow(
+                                      color: AppColors.neuDarkShadow,
+                                      offset: Offset(1, 3),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            const Spacer(),
-                            Row(
-                              children: [
-                                const Icon(Icons.verified_rounded, color: AppColors.statusVerified, size: 14),
-                                const SizedBox(width: 4),
-                                const Expanded(
-                                  child: Text(
-                                    'Verified Member',
-                                    style: TextStyle(fontSize: 10, color: AppColors.statusVerified, fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                child: Icon(
+                                  icon,
+                                  color: isSelected
+                                      ? AppColors.greenForest
+                                      : AppColors.greenForest.withValues(alpha: 0.85),
+                                  size: 26,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${worker.yearsOfExperience ?? "2+"} yrs exp',
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                catName,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  color: isSelected ? AppColors.greenForest : AppColors.textPrimary,
+                                  letterSpacing: -0.2,
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
+                ),
+
+                // 5. Seasonal & Trending Needs (Smart Recommendations)
+                if (_searchQuery.isEmpty && _selectedCategory == null) ...[
+                  const SizedBox(height: 20),
+                  _buildSeasonalSection(),
+                ],
+                const SizedBox(height: 22),
+
+                // 6. Popular Services Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Search Results'
+                              : (_selectedCategory != null
+                                  ? '$_selectedCategory Services'
+                                  : 'Popular Services'),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (_searchQuery.isNotEmpty || _selectedCategory != null)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _searchController.clear();
+                              _searchQuery = '';
+                              _selectedCategory = null;
+                            });
+                          },
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.greenForest,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Services List / Horizontal Carousel with ⭐ Ratings and Fixed Rates
+                if (servicesSnapshot.connectionState == ConnectionState.waiting)
+                  const Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.greenForest),
+                      ),
+                    ),
+                  )
+                else if (displayedServices.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFDCE7E1), width: 1),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.search_off_rounded, size: 36, color: AppColors.textTertiary),
+                          const SizedBox(height: 8),
+                          Text(
+                            _searchQuery.isNotEmpty
+                                ? 'No services matching "$_searchQuery"'
+                                : 'No services available in this trade right now.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (_searchQuery.isNotEmpty || _selectedCategory != null)
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: displayedServices.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final service = displayedServices[index];
+                      return _buildVerticalServiceCard(service, index);
+                    },
+                  )
+                else
+                  SizedBox(
+                    height: 204,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: displayedServices.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 14),
+                      itemBuilder: (context, index) {
+                        final service = displayedServices[index];
+                        return _buildPopularServiceCard(service, index);
+                      },
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  ),
+);
+  }
+
+  // Active Booking Card Widget
+  Widget _buildActiveBookingCard(BookingModel booking) {
+    String statusLabel = 'Booking Confirmed';
+    Color statusBg = AppColors.greenMint.withValues(alpha: 0.4);
+    Color statusColor = AppColors.greenDeep;
+
+    if (booking.status == AppConstants.bookingPending) {
+      statusLabel = 'Pending Confirmation';
+      statusBg = const Color(0xFFFEF3C7);
+      statusColor = const Color(0xFFB45309);
+    } else if (booking.status == AppConstants.bookingInProgress) {
+      statusLabel = 'In Progress';
+      statusBg = const Color(0xFFDBEAFE);
+      statusColor = const Color(0xFF1D4ED8);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD4E2DA), width: 1.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.neuDarkShadow,
+            offset: Offset(2, 4),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.greenEmerald,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'ACTIVE BOOKING',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                  color: AppColors.greenForest,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      booking.serviceName,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${booking.scheduledDate.day}/${booking.scheduledDate.month}/${booking.scheduledDate.year} • ${booking.timeSlot}',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _BounceButton(
+                onPressed: () => widget.onNavigateTab(1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.greenForest],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.greenForest.withValues(alpha: 0.25),
+                        offset: const Offset(0, 2),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Track',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildServiceCard(ServiceModel service) {
+  // Unified Cooperative Trust & Guarantee Card
+  Widget _buildTrustGuaranteeCard() {
     return Container(
-      width: 170,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE8E1), width: 1.0),
         boxShadow: const [
           BoxShadow(
-            color: AppColors.cardShadow,
+            color: Color(0x0C064E3B),
+            offset: Offset(0, 4),
+            blurRadius: 14,
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(0, -1),
+            blurRadius: 3,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: AppColors.greenForest,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 7),
+              const Text(
+                'COOPERATIVE ASSURED',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                  color: AppColors.greenForest,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.greenMint.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  '100% Quality Seal',
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.greenDeep,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 1,
+            color: const Color(0xFFEEF5F1),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildTrustCardItem(
+                  icon: Icons.gpp_good_rounded,
+                  title: 'Cooperative Head',
+                  subtitle: 'Verification',
+                  iconColor: AppColors.greenForest,
+                  badgeBg: const Color(0xFFE8F6EE),
+                  badgeBorder: const Color(0xFFCEEBD8),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildTrustCardItem(
+                  icon: Icons.currency_rupee_rounded,
+                  title: 'Fair Rates',
+                  subtitle: 'Transparent',
+                  iconColor: const Color(0xFF0D9488),
+                  badgeBg: const Color(0xFFE6F8F3),
+                  badgeBorder: const Color(0xFFC7EFE4),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildTrustCardItem(
+                  icon: Icons.workspace_premium_rounded,
+                  title: 'Warranty',
+                  subtitle: 'Guaranteed',
+                  iconColor: AppColors.greenForest,
+                  badgeBg: const Color(0xFFE8F6EE),
+                  badgeBorder: const Color(0xFFCEEBD8),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrustCardItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color iconColor,
+    required Color badgeBg,
+    required Color badgeBorder,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: badgeBg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: badgeBorder,
+              width: 1.0,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 22,
+              color: iconColor,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.2,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: iconColor,
+          ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  // Popular Services Horizontal Card with ⭐ Ratings & Fixed Rate
+  Widget _buildPopularServiceCard(ServiceModel service, int index) {
+    final rating = _getServiceRating(index);
+    final reviews = _getServiceReviewCount(index);
+    final price = service.priceRange?.isNotEmpty == true
+        ? service.priceRange!
+        : '₹199 fixed';
+
+    return Container(
+      width: 172,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2EBE5), width: 1.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 4,
+          ),
+          BoxShadow(
+            color: AppColors.neuDarkShadow,
+            offset: Offset(2, 3),
             blurRadius: 8,
-            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -564,39 +901,72 @@ class _CustomerHomeTabState extends State<CustomerHomeTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 48,
-              width: 48,
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.build_circle_rounded, color: AppColors.primary, size: 28),
+            Row(
+              children: [
+                Container(
+                  height: 38,
+                  width: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.greenMint.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(service.category),
+                    color: AppColors.greenForest,
+                    size: 20,
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 2),
+                    Text(
+                      rating,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
             const Spacer(),
             Text(
               service.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13.5,
+                color: AppColors.textPrimary,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(
-              service.category,
-              style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              '⭐ $rating ($reviews reviews)',
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textTertiary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              service.priceRange ?? '₹250 - ₹500',
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.primary),
+              price,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 12.5,
+                color: AppColors.greenForest,
+              ),
             ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              height: 32,
-              child: ElevatedButton(
+              height: 34,
+              child: _BounceButton(
                 onPressed: () async {
                   final result = await ServiceBookingDialog.show(
                     context,
@@ -604,20 +974,396 @@ class _CustomerHomeTabState extends State<CustomerHomeTab> {
                     customer: widget.customer,
                   );
                   if (result == true) {
-                    widget.onNavigateTab(1); // navigate to Bookings tab
+                    widget.onNavigateTab(1);
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.greenForest],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.greenForest.withValues(alpha: 0.22),
+                        offset: const Offset(0, 2),
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Book Now',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
                 ),
-                child: const Text('Book', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Vertical Service Card for Search & Filter Results
+  Widget _buildVerticalServiceCard(ServiceModel service, int index) {
+    final rating = _getServiceRating(index);
+    final reviews = _getServiceReviewCount(index);
+    final price = service.priceRange?.isNotEmpty == true
+        ? service.priceRange!
+        : '₹199 fixed';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2EBE5), width: 1.0),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.neuDarkShadow,
+            offset: Offset(0, 2),
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: AppColors.greenMint.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              _getCategoryIcon(service.category),
+              color: AppColors.greenForest,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    const Icon(Icons.star_rounded, size: 13, color: Color(0xFFF59E0B)),
+                    const SizedBox(width: 2),
+                    Text(
+                      '$rating ($reviews) • $price',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          _BounceButton(
+            onPressed: () async {
+              final result = await ServiceBookingDialog.show(
+                context,
+                service: service,
+                customer: widget.customer,
+              );
+              if (result == true) {
+                widget.onNavigateTab(1);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.greenForest],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.greenForest.withValues(alpha: 0.25),
+                    offset: const Offset(0, 2),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Book Now',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Seasonal & Trending Needs Section
+  Widget _buildSeasonalSection() {
+    final List<Map<String, dynamic>> seasonalItems = [
+      {
+        'tag': '☀️ SUMMER ESSENTIAL',
+        'title': 'AC Master Servicing & Fan Tune-up',
+        'subtitle': 'Gas check, filter sanitization & speed fix',
+        'badge': '₹399 fixed',
+        'icon': Icons.ac_unit_rounded,
+        'gradient': const [Color(0xFFE8F5E9), Color(0xFFD4EEDC)],
+        'borderColor': const Color(0xFFC3E5CE),
+        'textColor': const Color(0xFF14532D),
+        'tagBg': const Color(0xFFDCFCE7),
+        'tagColor': const Color(0xFF15803D),
+        'query': 'Electrician',
+      },
+      {
+        'tag': '💧 MONSOON READY',
+        'title': 'Roof Waterproofing & Drain Clearing',
+        'subtitle': 'Prevent wall seepage & drain backups',
+        'badge': 'Guaranteed fix',
+        'icon': Icons.water_drop_rounded,
+        'gradient': const [Color(0xFFE0F2FE), Color(0xFFCCE8FA)],
+        'borderColor': const Color(0xFFB8DEFA),
+        'textColor': const Color(0xFF0C4A6E),
+        'tagBg': const Color(0xFFE0F2FE),
+        'tagColor': const Color(0xFF0369A1),
+        'query': 'Plumber',
+      },
+      {
+        'tag': '✨ FESTIVE FRESH',
+        'title': 'Deep Home Cleaning & Wall Painting',
+        'subtitle': 'Kitchen, bathroom & living disinfection',
+        'badge': 'Best Value',
+        'icon': Icons.cleaning_services_rounded,
+        'gradient': const [Color(0xFFFFF7ED), Color(0xFFFED7AA)],
+        'borderColor': const Color(0xFFFDC38A),
+        'textColor': const Color(0xFF7C2D12),
+        'tagBg': const Color(0xFFFFEDD5),
+        'tagColor': const Color(0xFFC2410C),
+        'query': 'Cleaning',
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: const [
+              Icon(Icons.wb_sunny_rounded, size: 16, color: Color(0xFFF59E0B)),
+              SizedBox(width: 6),
+              Text(
+                'Seasonal & Trending Needs',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            scrollDirection: Axis.horizontal,
+            itemCount: seasonalItems.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              final item = seasonalItems[index];
+              return _BounceButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedCategory = item['query'] as String;
+                  });
+                },
+                child: Container(
+                  width: 275,
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: item['gradient'] as List<Color>,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: item['borderColor'] as Color,
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        offset: const Offset(0, 3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: item['tagBg'] as Color,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                item['tag'] as String,
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: item['tagColor'] as Color,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              item['title'] as String,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: item['textColor'] as Color,
+                                height: 1.2,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              item['subtitle'] as String,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: (item['textColor'] as Color).withValues(alpha: 0.8),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          item['icon'] as IconData,
+                          color: item['tagColor'] as Color,
+                          size: 21,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tactile spring-back button for interactive elements
+// ---------------------------------------------------------------------------
+class _BounceButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onPressed;
+
+  const _BounceButton({
+    required this.child,
+    this.onPressed,
+  });
+
+  @override
+  State<_BounceButton> createState() => _BounceButtonState();
+}
+
+class _BounceButtonState extends State<_BounceButton> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 110),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: widget.onPressed == null ? null : (_) => _controller.forward(),
+      onTapUp: widget.onPressed == null
+          ? null
+          : (_) {
+              _controller.reverse();
+              widget.onPressed?.call();
+            },
+      onTapCancel: widget.onPressed == null ? null : () => _controller.reverse(),
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
+        child: widget.child,
       ),
     );
   }

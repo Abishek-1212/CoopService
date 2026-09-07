@@ -114,8 +114,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const Text('Create Account'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -130,23 +133,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  "Create your CoopService account",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _isGoogleMode
-                      ? "Complete your profile information below"
-                      : "Join our community of verified household & local service providers",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
+                const Center(
+                  child: Text(
+                    "CoopService",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenForest,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

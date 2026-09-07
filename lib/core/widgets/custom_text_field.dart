@@ -35,6 +35,7 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   bool _obscureText = true;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,27 +52,34 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: widget.readOnly ? AppColors.surfaceVariant : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.9),
-              width: 1.2,
+        Focus(
+          onFocusChange: (focused) {
+            setState(() {
+              _isFocused = focused;
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: widget.readOnly ? AppColors.surfaceVariant : AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _isFocused
+                    ? AppColors.greenForest
+                    : const Color(0xFFD4E2DA),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _isFocused
+                      ? AppColors.greenMint.withValues(alpha: 0.3)
+                      : Colors.black.withValues(alpha: 0.03),
+                  blurRadius: _isFocused ? 8 : 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.9),
-                blurRadius: 8,
-                offset: const Offset(-3, -3),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(3, 4),
-              ),
-            ],
-          ),
           child: TextFormField(
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
@@ -115,6 +123,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
           ),
         ),
+      ),
       ],
     );
   }
