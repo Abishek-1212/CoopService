@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "31167283638",
+    "project_id": "coopservice12",
+    "storage_bucket": "coopservice12.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31167283638:android:fb509362a80c2d2af64117",
+        "android_client_info": {
+          "package_name": "com.example.coop_service"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "31167283638-071nrn1fgcib429i6317cscp10masbcd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.coop_service",
+            "certificate_hash": "98d4bcd77f2f4d973d3e8a88b07bf30b51e6f062"
+          }
+        },
+        {
+          "client_id": "31167283638-ghm01t8eej3uv7u5bhloue5to2l37pco.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBp1-oeWMwX5-w9Eyp_jnQowJq_wnYBrhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "31167283638-ghm01t8eej3uv7u5bhloue5to2l37pco.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "31167283638-pigtjo8m6no5rchs5qljlsj3u7dvros1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.coopService"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

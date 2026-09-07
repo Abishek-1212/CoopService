@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isWorker(workerId) {
+      return isAuthenticated() && request.auth.uid == workerId;
+    }
+
+    // Worker documents & uploads
+    match /workers/{workerId}/{allPaths=**} {
+      // Worker can upload and view their own files; Cooperative Heads & Admins can read for verification
+      allow read: if isAuthenticated();
+      allow write: if isWorker(workerId);
+    }
+
+    // Cooperative society documents & logos
+    match /cooperatives/{coopId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Service icons and banners
+    match /services/{serviceId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}
