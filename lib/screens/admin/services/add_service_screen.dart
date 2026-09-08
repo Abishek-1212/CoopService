@@ -108,9 +108,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
-        title: const Text('Add Platform Service'),
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        title: const Text(
+          'Add Platform Service',
+          style: TextStyle(color: AppColors.greenDeep, fontWeight: FontWeight.w800),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -148,8 +153,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   'Service Overview (Required)',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.greenDeep,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -269,41 +274,62 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         ? _selectedCategory
                         : names.first;
 
-                    return DropdownButtonFormField<String>(
-                      initialValue: currentValue,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.category_rounded,
-                            color: AppColors.textSecondary),
-                      ),
-                      items: categories.map((cat) {
-                        return DropdownMenuItem(
-                          value: cat.name,
-                          child: Row(
-                            children: [
-                              Icon(cat.iconData,
-                                  size: 18, color: AppColors.greenForest),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  cat.name,
-                                  style: const TextStyle(fontSize: 14),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.white,
+                            offset: Offset(-2, -2),
+                            blurRadius: 4,
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedCategory = val;
-                          });
-                        }
-                      },
-                      validator: (val) =>
-                          val == null || val.isEmpty ? 'Please select a category' : null,
+                          BoxShadow(
+                            color: Color(0x0A064E3B),
+                            offset: Offset(2, 3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: currentValue,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.category_rounded,
+                              color: AppColors.greenForest),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        ),
+                        items: categories.map((cat) {
+                          return DropdownMenuItem(
+                            value: cat.name,
+                            child: Row(
+                              children: [
+                                Icon(cat.iconData,
+                                    size: 18, color: AppColors.greenForest),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    cat.name,
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _selectedCategory = val;
+                            });
+                          }
+                        },
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Please select a category' : null,
+                      ),
                     );
                   },
                 ),

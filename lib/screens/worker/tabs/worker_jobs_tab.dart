@@ -133,7 +133,7 @@ class _WorkerJobsTabState extends State<WorkerJobsTab>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       body: StreamBuilder<List<BookingModel>>(
         stream: _bookingService.streamBookingsForWorker(widget.worker),
         builder: (context, snapshot) {

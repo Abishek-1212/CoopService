@@ -34,14 +34,14 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       body: SafeArea(
         child: Column(
           children: [
             // Header Bar & Search
             Container(
-              padding: const EdgeInsets.all(16),
-              color: AppColors.surface,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              color: AppColors.backgroundMildGreen,
               child: Column(
                 children: [
                   Row(
@@ -51,9 +51,9 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                         child: Text(
                           'Cooperative Societies',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: AppColors.greenDeep,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -70,9 +70,11 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          backgroundColor: AppColors.greenForest,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
                         ),
                         icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text('Add Society', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
@@ -81,28 +83,51 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Search Field
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val.trim().toLowerCase();
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search by society name or operating area...',
-                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              },
-                            )
-                          : null,
+                  // Neumorphic Search Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-2, -2),
+                          blurRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: Color(0x0A064E3B),
+                          offset: Offset(2, 3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().toLowerCase();
+                        });
+                      },
+                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      decoration: InputDecoration(
+                        hintText: 'Search by society name or operating area...',
+                        hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 13.5),
+                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.greenForest),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textSecondary),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -123,7 +148,7 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, color: AppColors.neuBorder),
 
             // Stream List of Cooperatives & Users
             Expanded(
@@ -152,11 +177,11 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(16),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryContainer,
+                              decoration: BoxDecoration(
+                                color: AppColors.greenMint.withValues(alpha: 0.35),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.apartment_rounded, size: 40, color: AppColors.primary),
+                              child: const Icon(Icons.apartment_rounded, size: 40, color: AppColors.greenForest),
                             ),
                             const SizedBox(height: 12),
                             const Text(
@@ -165,7 +190,7 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: AppColors.greenDeep,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -187,8 +212,15 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
                                   ),
                                 );
                               },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.greenForest,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                elevation: 0,
+                              ),
                               icon: const Icon(Icons.add_rounded),
-                              label: const Text('Add Cooperative Society'),
+                              label: const Text('Add Cooperative Society', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -266,23 +298,44 @@ class _CooperativeListScreenState extends State<CooperativeListScreen> {
 
   Widget _buildFilterChip(String label) {
     final isSelected = _statusFilter == label;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: AppColors.primaryContainer,
-      backgroundColor: AppColors.surface,
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? AppColors.primary : AppColors.textSecondary,
-      ),
-      onSelected: (val) {
-        if (val) {
-          setState(() {
-            _statusFilter = label;
-          });
-        }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _statusFilter = label;
+        });
       },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.greenForest : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.greenForest : AppColors.neuBorder,
+            width: 1.2,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-1, -1),
+              blurRadius: 3,
+            ),
+            BoxShadow(
+              color: Color(0x0A064E3B),
+              offset: Offset(1, 2),
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : AppColors.textSecondary,
+          ),
+        ),
+      ),
     );
   }
 }

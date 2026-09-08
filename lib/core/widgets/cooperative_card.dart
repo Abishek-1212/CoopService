@@ -32,12 +32,12 @@ class CooperativeCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.greenMint.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.apartment_rounded,
-                  color: AppColors.primary,
+                  color: AppColors.greenForest,
                   size: 26,
                 ),
               ),
@@ -53,8 +53,8 @@ class CooperativeCard extends StatelessWidget {
                             cooperative.name,
                             style: const TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.greenDeep,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -93,11 +93,11 @@ class CooperativeCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1),
+          const Divider(height: 1, color: AppColors.neuBorder),
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.location_on_outlined, size: 16, color: AppColors.primary),
+              const Icon(Icons.location_on_outlined, size: 16, color: AppColors.greenForest),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -127,15 +127,16 @@ class CooperativeCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFFF1F7F3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.neuBorder, width: 1.0),
             ),
             child: Row(
               children: [
                 Icon(
                   hasHead ? Icons.verified_user_rounded : Icons.warning_amber_rounded,
                   size: 16,
-                  color: hasHead ? AppColors.primary : AppColors.statusPending,
+                  color: hasHead ? AppColors.greenForest : AppColors.statusPending,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -146,7 +147,7 @@ class CooperativeCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: hasHead ? AppColors.textPrimary : AppColors.statusPending,
+                      color: hasHead ? AppColors.greenDeep : AppColors.statusPending,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -39,42 +39,70 @@ class _WorkerDashboardState extends State<WorkerDashboard> {
             .length;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.backgroundMildGreen,
           appBar: AppBar(
+            backgroundColor: AppColors.backgroundMildGreen,
+            elevation: 0,
+            scrolledUnderElevation: 0,
             title: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE8F6EE), Color(0xFFD2EEDC)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBCE0CC), width: 1.2),
                   ),
                   child: const Icon(
                     Icons.handyman_rounded,
-                    color: AppColors.primary,
-                    size: 22,
+                    color: AppColors.greenForest,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 10),
                 const Expanded(
                   child: Text(
                     'Worker Dashboard',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
+                      letterSpacing: -0.3,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: AppColors.statusError),
-                tooltip: 'Logout',
-                onPressed: () => authProvider.signOut(),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: InkWell(
+                  onTap: () => authProvider.signOut(),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: const Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 16),
+                  ),
+                ),
               ),
             ],
           ),
           body: _buildBody(user),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,
+            backgroundColor: Colors.white,
+            indicatorColor: const Color(0xFFE8F6EE),
+            elevation: 8,
             onDestinationSelected: (idx) {
               setState(() {
                 _currentIndex = idx;

@@ -50,12 +50,12 @@ class ServiceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.greenMint.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _getCategoryIcon(service.category),
-                  color: AppColors.primary,
+                  color: AppColors.greenForest,
                   size: 26,
                 ),
               ),
@@ -71,8 +71,8 @@ class ServiceCard extends StatelessWidget {
                             service.name,
                             style: const TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.greenDeep,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -101,8 +101,8 @@ class ServiceCard extends StatelessWidget {
                       service.category,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
+                        color: AppColors.greenForest,
+                        fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -123,7 +123,7 @@ class ServiceCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 12),
-          const Divider(height: 1),
+          const Divider(height: 1, color: AppColors.neuBorder),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

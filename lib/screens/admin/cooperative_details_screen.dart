@@ -36,7 +36,7 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.backgroundMildGreen,
             body: LoadingIndicator(message: 'Loading cooperative details...'),
           );
         }
@@ -44,18 +44,28 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
         final coop = snapshot.data;
         if (coop == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Cooperative Not Found')),
+            backgroundColor: AppColors.backgroundMildGreen,
+            appBar: AppBar(
+              backgroundColor: AppColors.backgroundMildGreen,
+              elevation: 0,
+              title: const Text('Cooperative Not Found'),
+            ),
             body: const Center(child: Text('This cooperative society no longer exists.')),
           );
         }
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.backgroundMildGreen,
           appBar: AppBar(
-            title: Text(coop.name),
+            backgroundColor: AppColors.backgroundMildGreen,
+            elevation: 0,
+            title: Text(
+              coop.name,
+              style: const TextStyle(color: AppColors.greenDeep, fontWeight: FontWeight.w800),
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined),
+                icon: const Icon(Icons.edit_outlined, color: AppColors.greenDeep),
                 tooltip: 'Edit Cooperative',
                 onPressed: () {
                   Navigator.push(
@@ -83,11 +93,11 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryContainer,
+                            decoration: BoxDecoration(
+                              color: AppColors.greenMint.withValues(alpha: 0.35),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.apartment_rounded, color: AppColors.primary, size: 36),
+                            child: const Icon(Icons.apartment_rounded, color: AppColors.greenForest, size: 36),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -341,10 +351,15 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: coop.isActive ? AppColors.statusErrorBg : AppColors.statusVerifiedBg,
                     foregroundColor: coop.isActive ? AppColors.statusError : AppColors.statusVerified,
-                    minimumSize: const Size(double.infinity, 48),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
                   ),
                   icon: Icon(coop.isActive ? Icons.block_rounded : Icons.check_circle_rounded),
-                  label: Text(coop.isActive ? 'Deactivate Society' : 'Activate Society'),
+                  label: Text(
+                    coop.isActive ? 'Deactivate Society' : 'Activate Society',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -463,12 +478,14 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: AppColors.greenForest,
                 foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 44),
+                minimumSize: const Size(double.infinity, 46),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
               ),
               icon: const Icon(Icons.person_add_alt_1_rounded),
-              label: const Text('Assign Cooperative Head'),
+              label: const Text('Assign Cooperative Head', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -548,10 +565,14 @@ class _CooperativeDetailsScreenState extends State<CooperativeDetailsScreen> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      foregroundColor: AppColors.greenForest,
+                      side: const BorderSide(color: AppColors.neuBorder, width: 1.2),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                    label: const Text('Change Head', style: TextStyle(fontSize: 12)),
+                    label: const Text('Change Head', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

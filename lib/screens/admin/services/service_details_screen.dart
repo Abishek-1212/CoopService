@@ -33,24 +33,56 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
-        title: const Text('Service Master Details'),
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.greenDeep),
+        title: const Text(
+          'Service Master Details',
+          style: TextStyle(
+            color: AppColors.greenDeep,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Edit Service',
-            onPressed: () async {
-              final navigator = Navigator.of(context);
-              final service = await _serviceManagementService.getServiceById(widget.serviceId);
-              if (service != null && mounted) {
-                navigator.push(
-                  MaterialPageRoute(
-                    builder: (_) => EditServiceScreen(service: service),
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.white,
+                    offset: Offset(-1, -1),
+                    blurRadius: 3,
                   ),
-                );
-              }
-            },
+                  BoxShadow(
+                    color: Color(0x0A064E3B),
+                    offset: Offset(1, 2),
+                    blurRadius: 5,
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit_outlined, color: AppColors.greenForest, size: 20),
+                tooltip: 'Edit Service',
+                onPressed: () async {
+                  final navigator = Navigator.of(context);
+                  final service = await _serviceManagementService.getServiceById(widget.serviceId);
+                  if (service != null && mounted) {
+                    navigator.push(
+                      MaterialPageRoute(
+                        builder: (_) => EditServiceScreen(service: service),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -83,11 +115,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(14),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryContainer,
-                                shape: BoxShape.circle,
+                              decoration: BoxDecoration(
+                                color: AppColors.greenMint.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.neuBorder, width: 1),
                               ),
-                              child: const Icon(Icons.handyman_rounded, color: AppColors.primary, size: 32),
+                              child: const Icon(Icons.handyman_rounded, color: AppColors.greenForest, size: 28),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -99,7 +132,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
+                                      color: AppColors.greenDeep,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -107,8 +140,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     service.category,
                                     style: const TextStyle(
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.greenForest,
                                     ),
                                   ),
                                 ],
@@ -118,7 +151,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isActive ? AppColors.statusVerifiedBg : AppColors.statusErrorBg,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 isActive ? 'ACTIVE' : 'INACTIVE',
@@ -132,7 +165,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const Divider(height: 1),
+                        const Divider(height: 1, color: AppColors.neuBorder),
                         const SizedBox(height: 14),
                         Text(
                           service.shortDescription,
@@ -166,8 +199,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           'Service Specifications',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.greenDeep,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -175,16 +208,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.payments_outlined, color: AppColors.primary),
+                          leading: const Icon(Icons.payments_outlined, color: AppColors.greenForest),
                           title: const Text('Estimated Starting Price / Range'),
                           subtitle: Text(service.priceRange ?? 'Not Specified'),
                         ),
-                        const Divider(),
+                        const Divider(color: AppColors.neuBorder),
 
                         ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.psychology_outlined, color: AppColors.primary),
+                          leading: const Icon(Icons.psychology_outlined, color: AppColors.greenForest),
                           title: const Text('Required Skills & Qualifications'),
                           subtitle: service.requiredSkills.isNotEmpty
                               ? Padding(
@@ -194,7 +227,17 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     runSpacing: 6,
                                     children: service.requiredSkills.map((skill) {
                                       return Chip(
-                                        label: Text(skill, style: const TextStyle(fontSize: 11)),
+                                        label: Text(
+                                          skill,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.greenDeep,
+                                          ),
+                                        ),
+                                        backgroundColor: AppColors.greenMint.withValues(alpha: 0.25),
+                                        side: const BorderSide(color: AppColors.neuBorder),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                         padding: const EdgeInsets.all(4),
                                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       );
@@ -213,8 +256,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                     'Cooperative Societies Offering This Service',
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -230,23 +273,35 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
 
                       if (offeringCoops.isEmpty) {
                         return Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.border),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: AppColors.neuLightShadow,
+                                offset: Offset(-2, -2),
+                                blurRadius: 6,
+                              ),
+                              BoxShadow(
+                                color: Color(0x0A064E3B),
+                                offset: Offset(2, 4),
+                                blurRadius: 10,
+                              ),
+                            ],
                           ),
                           child: Center(
                             child: Column(
                               children: const [
-                                Icon(Icons.apartment_outlined, size: 36, color: AppColors.textTertiary),
-                                SizedBox(height: 8),
+                                Icon(Icons.apartment_outlined, size: 40, color: AppColors.greenForest),
+                                SizedBox(height: 10),
                                 Text(
                                   'No Cooperative Society Currently Offers This Service',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.greenDeep),
                                 ),
-                                SizedBox(height: 4),
+                                SizedBox(height: 6),
                                 Text(
                                   'Cooperative Societies can select this service in their settings or during society setup.',
                                   textAlign: TextAlign.center,

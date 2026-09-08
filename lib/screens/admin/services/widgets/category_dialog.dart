@@ -116,8 +116,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
       ),
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: AppColors.backgroundMildGreen,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(
+            top: BorderSide(color: AppColors.neuBorder, width: 1.2),
+            left: BorderSide(color: AppColors.neuBorder, width: 1.2),
+            right: BorderSide(color: AppColors.neuBorder, width: 1.2),
+          ),
         ),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Form(
@@ -130,10 +135,10 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 // Top Grab Handle
                 Center(
                   child: Container(
-                    width: 38,
+                    width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDCE8E1),
+                      color: AppColors.neuBorder,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -144,11 +149,12 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 Row(
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         color: AppColors.greenMint.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.neuBorder, width: 1),
                       ),
                       child: const Icon(
                         Icons.category_rounded,
@@ -166,7 +172,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                              color: AppColors.greenDeep,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -180,8 +186,15 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
+                    IconButton.filledTonal(
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppColors.neuBorder, width: 1),
+                        ),
+                      ),
+                      icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary, size: 20),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -250,15 +263,15 @@ class _CategoryDialogState extends State<CategoryDialog> {
                   'Select Trade Icon',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.greenDeep,
                   ),
                 ),
                 const SizedBox(height: 8),
 
                 // Icon Selector Grid / Horizontal List
                 SizedBox(
-                  height: 72,
+                  height: 76,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: CategoryModel.availableIcons.length,
@@ -278,18 +291,38 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
-                          width: 64,
+                          width: 68,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.greenMint.withValues(alpha: 0.35)
-                                : const Color(0xFFF6FAF7),
-                            borderRadius: BorderRadius.circular(14),
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.greenForest
-                                  : const Color(0xFFE2EBE5),
+                                  : AppColors.neuBorder,
                               width: isSelected ? 1.5 : 1.0,
                             ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.greenForest.withValues(alpha: 0.2),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : const [
+                                    BoxShadow(
+                                      color: Colors.white,
+                                      offset: Offset(-1, -1),
+                                      blurRadius: 3,
+                                    ),
+                                    BoxShadow(
+                                      color: Color(0x0A064E3B),
+                                      offset: Offset(1, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -331,17 +364,18 @@ class _CategoryDialogState extends State<CategoryDialog> {
                       child: OutlinedButton(
                         onPressed: _isLoading ? null : () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          side: const BorderSide(color: Color(0xFFDCE8E1)),
+                          side: const BorderSide(color: AppColors.neuBorder, width: 1.2),
                         ),
                         child: const Text(
                           'Cancel',
                           style: TextStyle(
                             color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),

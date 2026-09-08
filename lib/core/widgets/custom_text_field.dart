@@ -45,7 +45,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         Text(
           widget.label,
           style: const TextStyle(
-            color: AppColors.textPrimary,
+            color: AppColors.greenDeep,
             fontSize: 13,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.2,
@@ -62,68 +62,86 @@ class _CustomTextFieldState extends State<CustomTextField> {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
             decoration: BoxDecoration(
-              color: widget.readOnly ? AppColors.surfaceVariant : AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
+              color: widget.readOnly ? const Color(0xFFEAF2ED) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _isFocused
                     ? AppColors.greenForest
-                    : const Color(0xFFD4E2DA),
-                width: 1.0,
+                    : AppColors.neuBorder,
+                width: _isFocused ? 1.4 : 1.2,
               ),
               boxShadow: [
-                BoxShadow(
-                  color: _isFocused
-                      ? AppColors.greenMint.withValues(alpha: 0.3)
-                      : Colors.black.withValues(alpha: 0.03),
-                  blurRadius: _isFocused ? 8 : 4,
-                  offset: const Offset(0, 2),
+                const BoxShadow(
+                  color: Colors.white,
+                  offset: Offset(-2, -2),
+                  blurRadius: 4,
                 ),
+                if (_isFocused)
+                  BoxShadow(
+                    color: AppColors.greenForest.withValues(alpha: 0.16),
+                    offset: const Offset(0, 4),
+                    blurRadius: 10,
+                  )
+                else
+                  const BoxShadow(
+                    color: Color(0x0A064E3B),
+                    offset: Offset(2, 3),
+                    blurRadius: 8,
+                  ),
               ],
             ),
-          child: TextFormField(
-            controller: widget.controller,
-            obscureText: widget.isPassword ? _obscureText : false,
-            keyboardType: widget.keyboardType,
-            validator: widget.validator,
-            readOnly: widget.readOnly,
-            maxLines: widget.maxLines,
-            focusNode: widget.focusNode,
-            onChanged: widget.onChanged,
-            style: TextStyle(
-              color: widget.readOnly ? AppColors.textSecondary : AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            decoration: InputDecoration(
-              hintText: widget.hint,
-              filled: false,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              prefixIcon: widget.prefixIcon != null
-                  ? Icon(widget.prefixIcon, color: AppColors.textSecondary, size: 20)
-                  : null,
-              suffixIcon: widget.isPassword
-                  ? IconButton(
-                      icon: Icon(
-                        _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: AppColors.textSecondary,
+            child: TextFormField(
+              controller: widget.controller,
+              obscureText: widget.isPassword ? _obscureText : false,
+              keyboardType: widget.keyboardType,
+              validator: widget.validator,
+              readOnly: widget.readOnly,
+              maxLines: widget.maxLines,
+              focusNode: widget.focusNode,
+              onChanged: widget.onChanged,
+              style: TextStyle(
+                color: widget.readOnly ? AppColors.textSecondary : AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.hint,
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
+                  fontSize: 13.5,
+                ),
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                prefixIcon: widget.prefixIcon != null
+                    ? Icon(
+                        widget.prefixIcon,
+                        color: _isFocused ? AppColors.greenForest : const Color(0xFF6B8B7B),
                         size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureText = !_obscureText;
-                        });
-                      },
-                    )
-                  : (widget.readOnly ? const Icon(Icons.lock_outline, size: 18, color: AppColors.textSecondary) : null),
+                      )
+                    : null,
+                suffixIcon: widget.isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        },
+                      )
+                    : (widget.readOnly ? const Icon(Icons.lock_outline, size: 18, color: AppColors.textSecondary) : null),
+              ),
             ),
           ),
         ),
-      ),
       ],
     );
   }

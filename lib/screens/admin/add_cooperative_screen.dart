@@ -280,7 +280,7 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
+              color: AppColors.greenMint.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -288,7 +288,7 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
-                color: AppColors.primary,
+                color: AppColors.greenForest,
                 letterSpacing: 0.5,
               ),
             ),
@@ -300,7 +300,7 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: AppColors.greenDeep,
                 letterSpacing: 0.3,
               ),
               maxLines: 1,
@@ -315,9 +315,18 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Cooperative' : 'Register Cooperative Society'),
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        title: Text(
+          _isEditing ? 'Edit Cooperative' : 'Register Cooperative Society',
+          style: const TextStyle(
+            color: AppColors.greenDeep,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -504,7 +513,14 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
                       const SizedBox(height: 10),
                       OutlinedButton.icon(
                         onPressed: _pickRegistrationDocument,
-                        icon: const Icon(Icons.upload_file_rounded),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.greenForest,
+                          side: const BorderSide(color: AppColors.neuBorder, width: 1.2),
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        icon: const Icon(Icons.upload_file_rounded, color: AppColors.greenForest),
                         label: Text(
                           _regDocFile != null
                               ? 'Selected: ${_regDocFile!.name}'
@@ -513,6 +529,7 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
                                   : 'Choose Document (PDF/Image)',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -529,11 +546,19 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _pickLogoImage,
-                              icon: const Icon(Icons.image_outlined),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.greenForest,
+                                side: const BorderSide(color: AppColors.neuBorder, width: 1.2),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              icon: const Icon(Icons.image_outlined, color: AppColors.greenForest),
                               label: Text(
                                 _logoFile != null ? 'Logo Selected' : 'Upload Logo',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),
@@ -541,11 +566,19 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _pickCoverImage,
-                              icon: const Icon(Icons.panorama_outlined),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.greenForest,
+                                side: const BorderSide(color: AppColors.neuBorder, width: 1.2),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              icon: const Icon(Icons.panorama_outlined, color: AppColors.greenForest),
                               label: Text(
                                 _coverFile != null ? 'Cover Selected' : 'Upload Cover',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),
@@ -614,7 +647,8 @@ class _AddCooperativeScreenState extends State<AddCooperativeScreen> {
                       const SizedBox(width: 12),
                       Switch(
                         value: _status == AppConstants.statusActive,
-                        activeTrackColor: AppColors.primaryContainer,
+                        activeTrackColor: AppColors.greenMint,
+                        activeThumbColor: AppColors.greenForest,
                         onChanged: (val) {
                           setState(() {
                             _status = val ? AppConstants.statusActive : AppConstants.statusInactive;

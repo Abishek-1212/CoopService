@@ -62,8 +62,8 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Confirm Assignment'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Confirm Assignment', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.greenDeep)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +75,7 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
                   const TextSpan(text: 'Are you sure you want to assign '),
                   TextSpan(
                     text: user.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.greenForest),
                   ),
                   const TextSpan(text: ' as the '),
                   const TextSpan(
@@ -85,7 +85,7 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
                   const TextSpan(text: ' of '),
                   TextSpan(
                     text: widget.cooperative.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.greenForest),
                   ),
                   const TextSpan(text: '?'),
                 ],
@@ -93,17 +93,18 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFF1F7F3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.neuBorder, width: 1.0),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Assigned Area: $area',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.greenDeep),
                   ),
                   const SizedBox(height: 2),
                   const Text(
@@ -118,7 +119,7 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -126,10 +127,12 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
               _performAssignment(user, area);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppColors.greenForest,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
-            child: const Text('Confirm Assignment'),
+            child: const Text('Confirm Assignment', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -181,11 +184,16 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
-        title: const Text('Assign Cooperative Head'),
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        title: const Text(
+          'Assign Cooperative Head',
+          style: TextStyle(color: AppColors.greenDeep, fontWeight: FontWeight.w800),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.greenDeep),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -193,84 +201,107 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
         child: Column(
           children: [
             // Selected Cooperative Info Card
-            Container(
-              color: AppColors.surface,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.greenMint.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.apartment_rounded, color: AppColors.greenForest, size: 22),
                         ),
-                        child: const Icon(Icons.apartment_rounded, color: AppColors.primary, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.cooperative.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.cooperative.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.greenDeep,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              'Reg #: ${widget.cooperative.registrationNumber}',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
+                              Text(
+                                'Reg #: ${widget.cooperative.registrationNumber}',
+                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
 
-                  // Operating Area Input
-                  CustomTextField(
-                    controller: _serviceAreaController,
-                    label: 'Assigned Service Operating Area',
-                    hint: 'e.g. Sector 5 & Downtown Area',
-                    prefixIcon: Icons.map_outlined,
-                  ),
-                ],
+                    // Operating Area Input
+                    CustomTextField(
+                      controller: _serviceAreaController,
+                      label: 'Assigned Service Operating Area',
+                      hint: 'e.g. Sector 5 & Downtown Area',
+                      prefixIcon: Icons.map_outlined,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const Divider(height: 1),
 
-            // Search Bar & Filter Header
+            // Neumorphic Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) {
-                  setState(() {
-                    _searchQuery = val.trim().toLowerCase();
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search user by name, email, or phone...',
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              _searchQuery = '';
-                            });
-                          },
-                        )
-                      : null,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: Offset(-2, -2),
+                      blurRadius: 4,
+                    ),
+                    BoxShadow(
+                      color: Color(0x0A064E3B),
+                      offset: Offset(2, 3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) {
+                    setState(() {
+                      _searchQuery = val.trim().toLowerCase();
+                    });
+                  },
+                  style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                  decoration: InputDecoration(
+                    hintText: 'Search user by name, email, or phone...',
+                    hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 13.5),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.greenForest),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textSecondary),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
                 ),
               ),
             ),
@@ -439,14 +470,8 @@ class _AssignCooperativeHeadScreenState extends State<AssignCooperativeHeadScree
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
-                  color: AppColors.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.cardShadow,
-                      blurRadius: 10,
-                      offset: Offset(0, -3),
-                    ),
-                  ],
+                  color: AppColors.backgroundMildGreen,
+                  border: Border(top: BorderSide(color: AppColors.neuBorder, width: 1.2)),
                 ),
                 child: PrimaryButton(
                   text: 'Assign ${_selectedUser!.fullName} as Head',

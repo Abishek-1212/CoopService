@@ -45,14 +45,14 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       body: SafeArea(
         child: Column(
           children: [
             // Header Bar & Search
             Container(
-              padding: const EdgeInsets.all(16),
-              color: AppColors.surface,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              color: AppColors.backgroundMildGreen,
               child: Column(
                 children: [
                   Row(
@@ -63,9 +63,9 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                               ? 'Services Catalog'
                               : 'Trades & Categories',
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: AppColors.greenDeep,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -89,31 +89,32 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                           backgroundColor: AppColors.greenForest,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                              horizontal: 14, vertical: 10),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
                         ),
-                        icon: const Icon(Icons.add_rounded, size: 16),
+                        icon: const Icon(Icons.add_rounded, size: 18),
                         label: Text(
                           _selectedTab == 0 ? 'Add Service' : 'Add Category',
                           style: const TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // Mode Switcher (Services vs Categories)
                   Container(
-                    height: 42,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEDF4F0),
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFE4EEE7),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(4),
                     child: Row(
                       children: [
                         Expanded(
@@ -131,7 +132,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                                 color: _selectedTab == 0
                                     ? Colors.white
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(9),
+                                borderRadius: BorderRadius.circular(11),
                                 boxShadow: _selectedTab == 0
                                     ? const [
                                         BoxShadow(
@@ -174,7 +175,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                                 color: _selectedTab == 1
                                     ? Colors.white
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(9),
+                                borderRadius: BorderRadius.circular(11),
                                 boxShadow: _selectedTab == 1
                                     ? const [
                                         BoxShadow(
@@ -207,35 +208,58 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Search Field
-                  TextField(
-                    controller: _searchController,
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val.trim().toLowerCase();
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: _selectedTab == 0
-                          ? 'Search services by name or category...'
-                          : 'Search categories / trades...',
-                      prefixIcon: const Icon(Icons.search_rounded,
-                          color: AppColors.textSecondary),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear_rounded, size: 18),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              },
-                            )
-                          : null,
+                  // Neumorphic Search Field
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.neuBorder, width: 1.2),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-2, -2),
+                          blurRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: Color(0x0A064E3B),
+                          offset: Offset(2, 3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().toLowerCase();
+                        });
+                      },
+                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      decoration: InputDecoration(
+                        hintText: _selectedTab == 0
+                            ? 'Search services by name or category...'
+                            : 'Search categories / trades...',
+                        hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 13.5),
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            color: AppColors.greenForest),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textSecondary),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                   if (_selectedTab == 0) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     // Filter Chips (All, Active, Inactive)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -253,7 +277,7 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, color: AppColors.neuBorder),
 
             // Main Body (Services Stream or Categories Stream)
             Expanded(
@@ -683,23 +707,44 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
 
   Widget _buildFilterChip(String label) {
     final isSelected = _statusFilter == label;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: AppColors.greenMint.withValues(alpha: 0.4),
-      backgroundColor: AppColors.surface,
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? AppColors.greenDeep : AppColors.textSecondary,
-      ),
-      onSelected: (val) {
-        if (val) {
-          setState(() {
-            _statusFilter = label;
-          });
-        }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _statusFilter = label;
+        });
       },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.greenForest : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.greenForest : AppColors.neuBorder,
+            width: 1.2,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-1, -1),
+              blurRadius: 3,
+            ),
+            BoxShadow(
+              color: Color(0x0A064E3B),
+              offset: Offset(1, 2),
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected ? Colors.white : AppColors.textSecondary,
+          ),
+        ),
+      ),
     );
   }
 }

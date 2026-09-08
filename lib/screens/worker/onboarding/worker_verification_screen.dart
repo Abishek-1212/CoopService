@@ -5,7 +5,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_image_helper.dart';
 import '../../../core/utils/validators.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/loading_indicator.dart';
 import '../../../core/widgets/primary_button.dart';
@@ -159,14 +158,14 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
   Future<void> _handleSaveAndProceed() async {
     if (!_formKey.currentState!.validate()) {
       setState(() {
-        _errorMessage = 'Please fix the errors in the form before proceeding.';
+        _errorMessage = 'Please fix the highlighted fields in the form.';
       });
       return;
     }
 
     if (_selectedPrimaryServiceId == null || _selectedPrimaryServiceId!.isEmpty) {
       setState(() {
-        _errorMessage = 'Please choose your primary service.';
+        _errorMessage = 'Please choose your primary trade service.';
       });
       return;
     }
@@ -189,7 +188,7 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
     // Driver specific check
     if (_isDriverService && _driverLicenceFile == null && (_driverLicenceUrl == null || _driverLicenceUrl!.isEmpty)) {
       setState(() {
-        _errorMessage = 'Driving Licence document is mandatory for Driver professions.';
+        _errorMessage = 'Driving Licence document is mandatory for Driver trade.';
       });
       return;
     }
@@ -331,10 +330,17 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
       debugPrint('[WorkerVerification] Proceeding to SelectCooperativeScreen...');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile and verification documents saved!'),
-            backgroundColor: AppColors.statusVerified,
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Expanded(child: Text('Profile and verification documents saved!')),
+              ],
+            ),
+            backgroundColor: AppColors.greenForest,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
 
@@ -370,62 +376,181 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
-        title: const Text('Worker Verification'),
-        centerTitle: false,
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8F6EE), Color(0xFFD2EEDC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBCE0CC), width: 1.2),
+              ),
+              child: const Icon(Icons.handyman_rounded, color: AppColors.greenForest, size: 20),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Worker Verification',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.greenDeep,
+                  letterSpacing: -0.3,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.statusError),
-            tooltip: 'Sign Out',
-            onPressed: () => authProvider.signOut(),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: InkWell(
+              onTap: () => authProvider.signOut(),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFECACA)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Sign Out',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Step Indicator Header
+                // 1. Neumorphic Step Indicator Header
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.badge_rounded, color: Colors.white, size: 24),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEBF7F0), Color(0xFFD9EFE2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: const Color(0xFFBCE0CC), width: 1.2),
+                    boxShadow: [
+                      const BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-2, -2),
+                        blurRadius: 5,
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Step 1 of 2: Profile & Verification',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
+                      BoxShadow(
+                        color: AppColors.greenDeep.withValues(alpha: 0.05),
+                        offset: const Offset(2, 4),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.greenForest,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.greenForest.withValues(alpha: 0.3),
+                                  offset: const Offset(0, 3),
+                                  blurRadius: 6,
+                                ),
+                              ],
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Complete your professional profile & identity proofs to find matching cooperative societies.',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            child: const Icon(Icons.badge_rounded, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBCE0CC)),
+                                  ),
+                                  child: const Text(
+                                    'STEP 1 OF 2',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.greenForest,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Profile & Identity Verification',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.greenDeep,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Complete your profile and upload verification documents to join your local Cooperative Society.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Progress track
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: 0.5,
+                          minHeight: 6,
+                          backgroundColor: const Color(0xFFC8DEC7),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.greenForest),
                         ),
                       ),
                     ],
@@ -433,13 +558,14 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // Error Banner (if any)
                 if (_errorMessage != null) ...[
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: AppColors.statusErrorBg,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.statusError),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.statusError.withValues(alpha: 0.5)),
                     ),
                     child: Row(
                       children: [
@@ -448,30 +574,37 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                         Expanded(
                           child: Text(
                             _errorMessage!,
-                            style: const TextStyle(color: AppColors.statusError, fontSize: 13),
+                            style: const TextStyle(color: AppColors.statusError, fontSize: 12.5, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                 ],
 
-                // Profile Photo Card
-                AppCard(
+                // 2. Profile Photo Card (Neumorphic)
+                _buildNeumorphicCard(
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 36,
-                        backgroundColor: AppColors.primaryContainer,
-                        backgroundImage: _profilePhotoFile != null
-                            ? null
-                            : AppImageHelper.getImageProvider(_profilePhotoUrl),
-                        child: _profilePhotoFile != null
-                            ? const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 36)
-                            : (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty
-                                ? const Icon(Icons.person_rounded, size: 38, color: AppColors.primary)
-                                : null),
+                      Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.greenForest, width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 34,
+                          backgroundColor: const Color(0xFFE8F6EE),
+                          backgroundImage: _profilePhotoFile != null
+                              ? null
+                              : AppImageHelper.getImageProvider(_profilePhotoUrl),
+                          child: _profilePhotoFile != null
+                              ? const Icon(Icons.check_circle_rounded, color: AppColors.greenForest, size: 34)
+                              : (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty
+                                  ? const Icon(Icons.person_rounded, size: 36, color: AppColors.greenForest)
+                                  : null),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -480,20 +613,26 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                           children: [
                             const Text(
                               'Profile Photo',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                color: AppColors.greenDeep,
+                              ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 3),
                             Text(
                               _profilePhotoFile != null
                                   ? 'Selected: ${_profilePhotoFile!.name}'
                                   : (_profilePhotoUrl != null
-                                      ? 'Photo uploaded'
+                                      ? 'Photo already uploaded'
                                       : 'Upload a clear professional photo'),
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
-                            OutlinedButton.icon(
-                              onPressed: () async {
+                            InkWell(
+                              onTap: () async {
                                 final picked = await _pickImageOrFile();
                                 if (picked != null) {
                                   setState(() {
@@ -501,8 +640,30 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                                   });
                                 }
                               },
-                              icon: const Icon(Icons.camera_alt_outlined, size: 16),
-                              label: const Text('Choose Photo', style: TextStyle(fontSize: 12)),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F6EE),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFFBCE0CC)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.camera_alt_rounded, size: 15, color: AppColors.greenForest),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Choose Photo',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.greenForest,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -512,14 +673,14 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // Card 1: Personal & Location Details
-                AppCard(
+                // 3. Card 1: Personal & Contact Details
+                _buildNeumorphicCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Personal & Contact Details',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      _buildSectionHeader(
+                        icon: Icons.person_pin_rounded,
+                        title: 'Personal & Contact Details',
                       ),
                       const SizedBox(height: 16),
                       CustomTextField(
@@ -642,16 +803,16 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // Card 2: Dynamic Services Selection
-                AppCard(
+                // 4. Card 2: Dynamic Services Selection
+                _buildNeumorphicCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Service & Profession',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      _buildSectionHeader(
+                        icon: Icons.handyman_rounded,
+                        title: 'Service & Trade Profession',
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       const Text(
                         'Select your primary trade. Active cooperatives will be matched based on this service.',
                         style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
@@ -670,7 +831,6 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                             return const Text('No active services currently available.');
                           }
 
-                          // Ensure currently selected ID is valid
                           final hasMatching = services.any((s) => s.id == _selectedPrimaryServiceId);
                           if (!hasMatching && services.isNotEmpty) {
                             _selectedPrimaryServiceId = services.first.id;
@@ -680,48 +840,45 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                                 services.firstWhere((s) => s.id == _selectedPrimaryServiceId).name;
                           }
 
-                          return DropdownButtonFormField<String>(
-                            initialValue: _selectedPrimaryServiceId,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: 'Primary Service *',
-                              prefixIcon: const Icon(Icons.handyman_outlined, color: AppColors.primary),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFDDECE3)),
                             ),
-                            items: services.map((s) {
-                              return DropdownMenuItem<String>(
-                                value: s.id,
-                                child: Text(
-                                  '${s.name} (${s.category})',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            }).toList(),
-                            selectedItemBuilder: (BuildContext context) {
-                              return services.map((s) {
-                                return Align(
-                                  alignment: Alignment.centerLeft,
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _selectedPrimaryServiceId,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Primary Trade Service *',
+                                prefixIcon: Icon(Icons.handyman_outlined, color: AppColors.greenForest),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              ),
+                              items: services.map((s) {
+                                return DropdownMenuItem<String>(
+                                  value: s.id,
                                   child: Text(
                                     '${s.name} (${s.category})',
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                                   ),
                                 );
-                              }).toList();
-                            },
-                            onChanged: (val) {
-                              if (val != null) {
-                                final s = services.firstWhere((element) => element.id == val);
-                                setState(() {
-                                  _selectedPrimaryServiceId = val;
-                                  _selectedPrimaryServiceName = s.name;
-                                });
-                              }
-                            },
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  final s = services.firstWhere((element) => element.id == val);
+                                  setState(() {
+                                    _selectedPrimaryServiceId = val;
+                                    _selectedPrimaryServiceName = s.name;
+                                  });
+                                }
+                              },
+                            ),
                           );
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
 
                       CustomTextField(
                         controller: _bioController,
@@ -742,51 +899,51 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // Card 3: Proof of Identity
-                AppCard(
+                // 5. Card 3: Proof of Identity
+                _buildNeumorphicCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Proof of Identity',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      _buildSectionHeader(
+                        icon: Icons.verified_user_rounded,
+                        title: 'Proof of Identity',
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       const Text(
-                        'Documents are kept secure and only verified by the Cooperative Head.',
+                        'Documents are kept safe and only verified by the Cooperative Society Head.',
                         style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 16),
 
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedIdentityType,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          labelText: 'Government ID Type *',
-                          prefixIcon: const Icon(Icons.credit_card_outlined, color: AppColors.primary),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFDDECE3)),
                         ),
-                        items: AppConstants.identityDocumentTypes.map((type) {
-                          return DropdownMenuItem(
-                            value: type,
-                            child: Text(type, overflow: TextOverflow.ellipsis),
-                          );
-                        }).toList(),
-                        selectedItemBuilder: (BuildContext context) {
-                          return AppConstants.identityDocumentTypes.map((type) {
-                            return Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(type, overflow: TextOverflow.ellipsis, maxLines: 1),
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _selectedIdentityType,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Government ID Type *',
+                            prefixIcon: Icon(Icons.credit_card_outlined, color: AppColors.greenForest),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                          items: AppConstants.identityDocumentTypes.map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(type, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                             );
-                          }).toList();
-                        },
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              _selectedIdentityType = val;
-                            });
-                          }
-                        },
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                _selectedIdentityType = val;
+                              });
+                            }
+                          },
+                        ),
                       ),
                       const SizedBox(height: 16),
 
@@ -805,7 +962,7 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                           }
                         },
                       ),
-                      const Divider(height: 24),
+                      const Divider(height: 24, color: Color(0xFFEEF5F1)),
 
                       // Address Proof Upload Row
                       _buildUploadRow(
@@ -827,37 +984,37 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 18),
 
-                // Card 4: Skill & Professional Documents
-                AppCard(
+                // 6. Card 4: Skill & Professional Documents
+                _buildNeumorphicCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 4,
+                      Row(
                         children: [
-                          const Text(
-                            'Skill & Professional Documents',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          Expanded(
+                            child: _buildSectionHeader(
+                              icon: Icons.workspace_premium_rounded,
+                              title: 'Skill & Certifications',
+                            ),
                           ),
                           if (_isDriverService)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                               decoration: BoxDecoration(
-                                color: AppColors.statusErrorBg,
-                                borderRadius: BorderRadius.circular(6),
+                                color: const Color(0xFFFEE2E2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFECACA)),
                               ),
                               child: const Text(
                                 'Licence Required',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.statusError),
+                                style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       const Text(
-                        'Upload certifications or training documents that prove your skills.',
+                        'Upload certifications or training credentials that prove your craft.',
                         style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 16),
@@ -877,7 +1034,7 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                             }
                           },
                         ),
-                        const Divider(height: 24),
+                        const Divider(height: 24, color: Color(0xFFEEF5F1)),
                       ],
 
                       _buildUploadRow(
@@ -894,7 +1051,7 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                           }
                         },
                       ),
-                      const Divider(height: 24),
+                      const Divider(height: 24, color: Color(0xFFEEF5F1)),
 
                       _buildUploadRow(
                         title: 'Experience / Training Certificate (Optional)',
@@ -915,6 +1072,7 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
                 ),
                 const SizedBox(height: 28),
 
+                // 7. Guaranteed Overflow-Free Continue Button
                 PrimaryButton(
                   text: 'Continue to Select Cooperative Society',
                   icon: Icons.arrow_forward_rounded,
@@ -930,6 +1088,60 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
     );
   }
 
+  // Neumorphic Card Wrapper
+  Widget _buildNeumorphicCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+        boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.greenDeep.withValues(alpha: 0.05),
+            offset: const Offset(2, 4),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  // Section Header with Icon
+  Widget _buildSectionHeader({required IconData icon, required String title}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F6EE),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: AppColors.greenForest, size: 18),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w800,
+              color: AppColors.greenDeep,
+              letterSpacing: -0.2,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Upload Row Widget with Squircle & Soft Badge
   Widget _buildUploadRow({
     required String title,
     required XFile? file,
@@ -944,12 +1156,15 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: hasFile ? AppColors.statusVerifiedBg : AppColors.primaryContainer,
-            shape: BoxShape.circle,
+            color: hasFile ? const Color(0xFFE8F6EE) : const Color(0xFFF3F8F5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: hasFile ? const Color(0xFFBCE0CC) : const Color(0xFFDDECE3),
+            ),
           ),
           child: Icon(
             hasFile ? Icons.check_circle_rounded : icon,
-            color: hasFile ? AppColors.statusVerified : AppColors.primary,
+            color: hasFile ? AppColors.greenForest : AppColors.textSecondary,
             size: 20,
           ),
         ),
@@ -960,18 +1175,23 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 file != null
                     ? 'Selected: ${file.name}'
                     : (existingUrl != null && existingUrl.isNotEmpty
-                        ? 'Document uploaded & on file'
+                        ? 'Document on file'
                         : 'No file selected yet'),
                 style: TextStyle(
                   fontSize: 11,
-                  color: hasFile ? AppColors.statusVerified : AppColors.textTertiary,
+                  color: hasFile ? AppColors.greenForest : AppColors.textTertiary,
+                  fontWeight: hasFile ? FontWeight.w600 : FontWeight.normal,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -979,10 +1199,38 @@ class _WorkerVerificationScreenState extends State<WorkerVerificationScreen> {
             ],
           ),
         ),
-        TextButton.icon(
-          onPressed: onPick,
-          icon: Icon(hasFile ? Icons.refresh_rounded : Icons.upload_file, size: 16),
-          label: Text(hasFile ? 'Replace' : 'Upload', style: const TextStyle(fontSize: 12)),
+        InkWell(
+          onTap: onPick,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: hasFile ? const Color(0xFFE8F6EE) : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: hasFile ? const Color(0xFFBCE0CC) : const Color(0xFFDDECE3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  hasFile ? Icons.refresh_rounded : Icons.upload_file_rounded,
+                  size: 14,
+                  color: AppColors.greenForest,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  hasFile ? 'Replace' : 'Upload',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.greenForest,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

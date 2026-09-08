@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/loading_indicator.dart';
+import '../../../core/widgets/primary_button.dart';
 import '../../../models/cooperative_join_request_model.dart';
 import '../../../models/cooperative_model.dart';
 import '../../../providers/auth_provider.dart';
@@ -28,6 +28,7 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
 
     if (user == null) {
       return const Scaffold(
+        backgroundColor: AppColors.backgroundMildGreen,
         body: Center(child: Text('User session not found.')),
       );
     }
@@ -37,14 +38,14 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
       builder: (context, requestSnap) {
         if (requestSnap.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.backgroundMildGreen,
             body: LoadingIndicator(message: 'Checking membership request status...'),
           );
         }
 
         final request = requestSnap.data;
 
-        // If request was approved and user refreshed, AuthWrapper will automatically route to WorkerDashboard.
+        // If request was approved, refresh profile to route to WorkerDashboard
         if (request != null && request.isApproved) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             authProvider.refreshCurrentUser();
@@ -52,33 +53,76 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
         }
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.backgroundMildGreen,
           appBar: AppBar(
-            title: const Text('Verification & Membership Status'),
+            backgroundColor: AppColors.backgroundMildGreen,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE8F6EE), Color(0xFFD2EEDC)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBCE0CC), width: 1.2),
+                  ),
+                  child: const Icon(Icons.shield_outlined, color: AppColors.greenForest, size: 20),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Membership Status',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
+                      letterSpacing: -0.3,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const Icon(Icons.refresh_rounded, color: AppColors.greenForest),
                 tooltip: 'Refresh Status',
                 onPressed: () {
                   authProvider.refreshCurrentUser();
                   setState(() {});
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: AppColors.statusError),
-                tooltip: 'Sign Out',
-                onPressed: () => authProvider.signOut(),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: InkWell(
+                  onTap: () => authProvider.signOut(),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: const Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 16),
+                  ),
+                ),
               ),
             ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildStatusHeroCard(request, user),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   if (request != null && request.cooperativeId.isNotEmpty)
                     StreamBuilder<CooperativeModel?>(
@@ -89,10 +133,10 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
                       },
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   _buildRestrictedAccessInfoCard(),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   _buildSubmittedDocumentsPreview(user, request),
 
                   const SizedBox(height: 24),
@@ -108,43 +152,67 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
   Widget _buildStatusHeroCard(CooperativeJoinRequestModel? request, dynamic user) {
     Color statusColor;
     Color statusBgColor;
+    Color statusBorderColor;
     IconData statusIcon;
     String statusTitle;
     String statusSubtitle;
 
     if (request == null) {
-      statusColor = AppColors.statusPending;
-      statusBgColor = AppColors.statusPendingBg;
+      statusColor = const Color(0xFFD97706);
+      statusBgColor = const Color(0xFFFEF3C7);
+      statusBorderColor = const Color(0xFFFDE68A);
       statusIcon = Icons.hourglass_top_rounded;
       statusTitle = 'Verification Pending';
       statusSubtitle = 'Your verification profile has been created. Awaiting Cooperative Head review.';
     } else if (request.isApproved) {
-      statusColor = AppColors.statusVerified;
-      statusBgColor = AppColors.statusVerifiedBg;
+      statusColor = AppColors.greenForest;
+      statusBgColor = const Color(0xFFE8F6EE);
+      statusBorderColor = const Color(0xFFBCE0CC);
       statusIcon = Icons.verified_rounded;
       statusTitle = 'Membership Approved!';
       statusSubtitle = 'Your worker verification is complete! You can now start receiving customer jobs.';
     } else if (request.isRejected) {
-      statusColor = AppColors.statusError;
-      statusBgColor = AppColors.statusErrorBg;
+      statusColor = const Color(0xFFDC2626);
+      statusBgColor = const Color(0xFFFEE2E2);
+      statusBorderColor = const Color(0xFFFECACA);
       statusIcon = Icons.cancel_rounded;
       statusTitle = 'Verification Request Rejected';
       statusSubtitle = 'The Cooperative Head was unable to verify your profile with the submitted documents.';
     } else if (request.isMoreInfoRequired) {
       statusColor = AppColors.primary;
-      statusBgColor = AppColors.primaryContainer;
+      statusBgColor = const Color(0xFFE6F8F3);
+      statusBorderColor = const Color(0xFFC7EFE4);
       statusIcon = Icons.info_rounded;
       statusTitle = 'More Information Required';
       statusSubtitle = 'The Cooperative Head has requested additional details or clearer documents.';
     } else {
-      statusColor = AppColors.statusPending;
-      statusBgColor = AppColors.statusPendingBg;
+      statusColor = const Color(0xFFD97706);
+      statusBgColor = const Color(0xFFFEF3C7);
+      statusBorderColor = const Color(0xFFFDE68A);
       statusIcon = Icons.hourglass_top_rounded;
       statusTitle = 'Verification Pending';
       statusSubtitle = 'Your membership request has been submitted successfully and is awaiting review.';
     }
 
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+        boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.greenDeep.withValues(alpha: 0.05),
+            offset: const Offset(2, 4),
+            blurRadius: 12,
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Container(
@@ -152,17 +220,19 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
             decoration: BoxDecoration(
               color: statusBgColor,
               shape: BoxShape.circle,
+              border: Border.all(color: statusBorderColor, width: 2),
             ),
-            child: Icon(statusIcon, size: 52, color: statusColor),
+            child: Icon(statusIcon, size: 48, color: statusColor),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Text(
             statusTitle,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
               color: statusColor,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 6),
@@ -178,46 +248,41 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.statusErrorBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.statusError),
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFECACA)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.warning_amber_rounded, color: AppColors.statusError, size: 18),
+                      Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 18),
                       SizedBox(width: 6),
                       Text(
                         'Reason for Rejection:',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.statusError, fontSize: 13),
+                        style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFFDC2626), fontSize: 13),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     request.rejectionReason!,
-                    style: const TextStyle(fontSize: 13, color: AppColors.statusError),
+                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF991B1B)),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
+            PrimaryButton(
+              text: 'Update Profile & Resubmit',
+              icon: Icons.edit_note_rounded,
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const WorkerVerificationScreen()),
                 );
               },
-              icon: const Icon(Icons.edit_note_rounded),
-              label: const Text('Update Profile & Resubmit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 44),
-              ),
             ),
           ],
 
@@ -227,9 +292,9 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.primary),
+                color: const Color(0xFFE6F8F3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFC7EFE4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,33 +305,28 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
                       SizedBox(width: 6),
                       Text(
                         'Message from Cooperative Head:',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13),
+                        style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 13),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     request.requestedInfoMessage!,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textPrimary),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
+            PrimaryButton(
+              text: 'Upload Documents & Resubmit',
+              icon: Icons.upload_file_rounded,
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const WorkerVerificationScreen()),
                 );
               },
-              icon: const Icon(Icons.upload_file_rounded),
-              label: const Text('Upload Requested Documents & Resubmit'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 44),
-              ),
             ),
           ],
         ],
@@ -275,53 +335,104 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
   }
 
   Widget _buildSocietySummaryCard(CooperativeModel? coop, CooperativeJoinRequestModel request, dynamic user) {
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+        boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.greenDeep.withValues(alpha: 0.05),
+            offset: const Offset(2, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Requested Cooperative Society',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F6EE),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.apartment_rounded, color: AppColors.greenForest, size: 18),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Requested Cooperative Society',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.greenDeep,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Container(
               padding: const EdgeInsets.all(10),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
-                shape: BoxShape.circle,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8F6EE), Color(0xFFD2EEDC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBCE0CC)),
               ),
-              child: const Icon(Icons.apartment_rounded, color: AppColors.primary),
+              child: const Icon(Icons.apartment_rounded, color: AppColors.greenForest, size: 22),
             ),
             title: Text(
               coop?.name ?? 'Cooperative Society',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.greenDeep),
             ),
             subtitle: Text(
-              'Registration #: ${coop?.registrationNumber ?? "Pending"}\nPrimary Service Area: ${coop?.primaryServiceArea ?? "Local Unit"}',
-              style: const TextStyle(fontSize: 12),
+              'Reg #: ${coop?.registrationNumber ?? "Pending"}\nPrimary Area: ${coop?.primaryServiceArea ?? "Local Unit"}',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
-          const Divider(),
+          const Divider(height: 20, color: Color(0xFFEEF5F1)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Primary Trade:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-              Text(
-                user.serviceCategory ?? 'Worker Trade',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              const Text('Primary Trade:', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F6EE),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFBCE0CC)),
+                ),
+                child: Text(
+                  user.serviceCategory ?? 'Worker Trade',
+                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.greenForest),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Submitted On:', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              const Text('Submitted On:', style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
               Text(
                 '${request.submittedAt.day}/${request.submittedAt.month}/${request.submittedAt.year}',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
               ),
             ],
           ),
@@ -331,18 +442,28 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
   }
 
   Widget _buildRestrictedAccessInfoCard() {
-    return AppCard(
-      backgroundColor: AppColors.surface,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFEF9C3), Color(0xFFFEF3C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: AppColors.statusPendingBg,
+            decoration: BoxDecoration(
+              color: Colors.white,
               shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFDE68A)),
             ),
-            child: const Icon(Icons.lock_clock_outlined, color: AppColors.statusPending, size: 20),
+            child: const Icon(Icons.lock_clock_outlined, color: Color(0xFFD97706), size: 18),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -351,12 +472,12 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
               children: const [
                 Text(
                   'Access Limitations While Pending',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: Color(0xFF92400E)),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'To protect cooperative customers and ensure safety, customer jobs, booking requests, and earnings features are locked until your identity and trade skills are verified by the Cooperative Head.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+                  'To protect cooperative customers and ensure safety, customer jobs, booking requests, and earnings features unlock once your identity and trade skills are certified by the Cooperative Head.',
+                  style: TextStyle(fontSize: 11.5, color: Color(0xFF78350F), height: 1.35),
                 ),
               ],
             ),
@@ -367,68 +488,139 @@ class _WorkerPendingVerificationScreenState extends State<WorkerPendingVerificat
   }
 
   Widget _buildSubmittedDocumentsPreview(dynamic user, CooperativeJoinRequestModel? request) {
-    return AppCard(
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFDDECE3), width: 1.2),
+        boxShadow: [
+          const BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.greenDeep.withValues(alpha: 0.05),
+            offset: const Offset(2, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Your Submitted Documents',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F6EE),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.folder_shared_rounded, color: AppColors.greenForest, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Submitted Documents',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ],
               ),
-              TextButton.icon(
-                onPressed: () {
+              InkWell(
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const WorkerVerificationScreen()),
                   );
                 },
-                icon: const Icon(Icons.edit, size: 14),
-                label: const Text('Edit', style: TextStyle(fontSize: 12)),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F6EE),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBCE0CC)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.edit_rounded, size: 12, color: AppColors.greenForest),
+                      SizedBox(width: 4),
+                      Text(
+                        'Edit',
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.greenForest),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.credit_card_outlined, color: AppColors.primary),
-            title: Text('${user.identityType ?? "Govt ID"} Proof'),
-            subtitle: Text(user.identityDocumentUrl != null && user.identityDocumentUrl!.isNotEmpty
+          const SizedBox(height: 12),
+          _buildDocTile(
+            icon: Icons.credit_card_outlined,
+            title: '${user.identityType ?? "Govt ID"} Proof',
+            subtitle: user.identityDocumentUrl != null && user.identityDocumentUrl!.isNotEmpty
                 ? 'Document uploaded securely'
-                : 'Not uploaded'),
-            trailing: const Icon(Icons.check_circle, color: AppColors.statusVerified, size: 18),
+                : 'Not uploaded',
+            hasFile: user.identityDocumentUrl != null && user.identityDocumentUrl!.isNotEmpty,
           ),
-          const Divider(),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.home_outlined, color: AppColors.primary),
-            title: const Text('Address Proof'),
-            subtitle: Text(user.addressProofUrl != null && user.addressProofUrl!.isNotEmpty
+          const Divider(height: 16, color: Color(0xFFEEF5F1)),
+          _buildDocTile(
+            icon: Icons.home_outlined,
+            title: 'Address Proof',
+            subtitle: user.addressProofUrl != null && user.addressProofUrl!.isNotEmpty
                 ? 'Document uploaded securely'
-                : 'Not uploaded'),
-            trailing: const Icon(Icons.check_circle, color: AppColors.statusVerified, size: 18),
+                : 'Not uploaded',
+            hasFile: user.addressProofUrl != null && user.addressProofUrl!.isNotEmpty,
           ),
-          const Divider(),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.workspace_premium_outlined, color: AppColors.primary),
-            title: const Text('Skill & Professional Certificates'),
-            subtitle: Text(user.skillCertificateUrls != null && user.skillCertificateUrls!.isNotEmpty
+          const Divider(height: 16, color: Color(0xFFEEF5F1)),
+          _buildDocTile(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Skill & Professional Certificates',
+            subtitle: user.skillCertificateUrls != null && user.skillCertificateUrls!.isNotEmpty
                 ? '${user.skillCertificateUrls!.length} certificate(s) on file'
-                : 'Optional / None uploaded'),
-            trailing: Icon(
-              user.skillCertificateUrls != null && user.skillCertificateUrls!.isNotEmpty
-                  ? Icons.check_circle
-                  : Icons.info_outline,
-              color: user.skillCertificateUrls != null && user.skillCertificateUrls!.isNotEmpty
-                  ? AppColors.statusVerified
-                  : AppColors.textTertiary,
-              size: 18,
-            ),
+                : 'Optional / None uploaded',
+            hasFile: user.skillCertificateUrls != null && user.skillCertificateUrls!.isNotEmpty,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDocTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool hasFile,
+  }) {
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: hasFile ? const Color(0xFFE8F6EE) : const Color(0xFFF3F8F5),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: hasFile ? const Color(0xFFBCE0CC) : const Color(0xFFDDECE3)),
+        ),
+        child: Icon(icon, color: hasFile ? AppColors.greenForest : AppColors.textSecondary, size: 18),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textPrimary)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+      trailing: Icon(
+        hasFile ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+        color: hasFile ? AppColors.greenForest : AppColors.textTertiary,
+        size: 18,
       ),
     );
   }

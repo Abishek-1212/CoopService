@@ -33,8 +33,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final user = authProvider.currentUser;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundMildGreen,
       appBar: AppBar(
+        backgroundColor: AppColors.backgroundMildGreen,
+        elevation: 0,
         titleSpacing: 16,
         title: Row(
           children: [
@@ -42,14 +44,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                  colors: [AppColors.greenForest, AppColors.greenDeep],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.greenForest.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -72,7 +74,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.2,
-                    color: AppColors.primary,
+                    color: AppColors.greenForest,
                   ),
                 ),
                 Text(
@@ -80,7 +82,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: AppColors.greenDeep,
                   ),
                 ),
               ],
@@ -91,8 +93,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Container(
             margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
-              color: AppColors.statusErrorBg,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.neuBorder, width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.white,
+                  offset: Offset(-1, -1),
+                  blurRadius: 3,
+                ),
+                BoxShadow(
+                  color: Color(0x0A064E3B),
+                  offset: Offset(1, 2),
+                  blurRadius: 5,
+                ),
+              ],
             ),
             child: IconButton(
               icon: const Icon(Icons.logout_rounded, color: AppColors.statusError, size: 20),
@@ -123,19 +138,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(35),
-          boxShadow: [
+          border: Border.all(color: AppColors.neuBorder, width: 1.2),
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 18,
-              spreadRadius: 1,
-              offset: const Offset(0, 6),
+              color: Colors.white,
+              blurRadius: 10,
+              offset: Offset(-3, -3),
             ),
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.8),
-              blurRadius: 10,
-              offset: const Offset(-3, -3),
+              color: Color(0x10064E3B),
+              blurRadius: 16,
+              spreadRadius: 1,
+              offset: Offset(0, 5),
             ),
           ],
         ),
@@ -158,13 +174,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     width: circleDiameter,
                     height: circleDiameter,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      gradient: const LinearGradient(
+                        colors: [AppColors.greenForest, AppColors.greenDeep],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: AppColors.greenForest.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -260,14 +280,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.primaryContainer, width: 1.5),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: AppColors.neuBorder, width: 1.2),
                       boxShadow: const [
                         BoxShadow(
-                          color: AppColors.cardShadow,
-                          blurRadius: 16,
-                          offset: Offset(0, 6),
+                          color: Colors.white,
+                          offset: Offset(-2, -2),
+                          blurRadius: 6,
+                        ),
+                        BoxShadow(
+                          color: Color(0x0C064E3B),
+                          blurRadius: 14,
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
@@ -280,14 +305,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                               height: 52,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [AppColors.primary, AppColors.primaryDark],
+                                  colors: [AppColors.greenForest, AppColors.greenDeep],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withValues(alpha: 0.35),
+                                    color: AppColors.greenForest.withValues(alpha: 0.35),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -308,7 +333,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 decoration: BoxDecoration(
                                   color: AppColors.statusVerified,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.surface, width: 2.5),
+                                  border: Border.all(color: Colors.white, width: 2.5),
                                 ),
                               ),
                             ),
@@ -324,7 +349,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryContainer,
+                                      color: AppColors.greenMint.withValues(alpha: 0.35),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
@@ -332,7 +357,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w900,
-                                        color: AppColors.primary,
+                                        color: AppColors.greenForest,
                                         letterSpacing: 0.8,
                                       ),
                                     ),
@@ -368,7 +393,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.greenDeep,
                                   letterSpacing: -0.3,
                                 ),
                               ),
@@ -394,8 +419,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     'Platform Statistics',
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -465,8 +490,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     'Platform Governance Quick Actions',
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.greenDeep,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -482,10 +507,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.greenMint.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.neuBorder, width: 1),
                           ),
-                          child: const Icon(Icons.category_rounded, color: AppColors.primary, size: 24),
+                          child: const Icon(Icons.category_rounded, color: AppColors.greenForest, size: 24),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -496,8 +522,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 'Manage Master Services Catalog',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.greenDeep,
                                 ),
                               ),
                               SizedBox(height: 2),
@@ -531,10 +557,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.greenMint.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.neuBorder, width: 1),
                           ),
-                          child: const Icon(Icons.add_business_rounded, color: AppColors.accent, size: 24),
+                          child: const Icon(Icons.add_business_rounded, color: AppColors.greenForest, size: 24),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -545,8 +572,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 'Register New Cooperative Society',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.greenDeep,
                                 ),
                               ),
                               SizedBox(height: 2),
@@ -577,10 +604,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceVariant,
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.greenMint.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.neuBorder, width: 1),
                           ),
-                          child: const Icon(Icons.domain_rounded, color: AppColors.primary, size: 24),
+                          child: const Icon(Icons.domain_rounded, color: AppColors.greenForest, size: 24),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -591,8 +619,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 'Manage Societies & Assign Heads',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.greenDeep,
                                 ),
                               ),
                               SizedBox(height: 2),
@@ -633,9 +661,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
 
         return Scaffold(
+          backgroundColor: AppColors.backgroundMildGreen,
           appBar: AppBar(
+            backgroundColor: AppColors.backgroundMildGreen,
+            elevation: 0,
             automaticallyImplyLeading: false,
-            title: Text('All Registered Users (${users.length})'),
+            title: Text(
+              'All Registered Users (${users.length})',
+              style: const TextStyle(
+                color: AppColors.greenDeep,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
           ),
           body: ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -647,10 +685,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: AppColors.greenMint.withValues(alpha: 0.35),
                       child: Text(
                         u.fullName.isNotEmpty ? u.fullName[0].toUpperCase() : 'U',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.greenForest),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -660,7 +698,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         children: [
                           Text(
                             u.fullName,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.greenDeep),
                           ),
                           Text(u.email, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                           Text(u.phone, style: const TextStyle(fontSize: 11, color: AppColors.textTertiary)),
@@ -668,14 +706,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.greenMint.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.neuBorder, width: 1),
                       ),
                       child: Text(
-                        u.role,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary),
+                        u.role.toUpperCase(),
+                        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.greenForest),
                       ),
                     ),
                   ],
@@ -702,9 +741,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
 
         return Scaffold(
+          backgroundColor: AppColors.backgroundMildGreen,
           appBar: AppBar(
+            backgroundColor: AppColors.backgroundMildGreen,
+            elevation: 0,
             automaticallyImplyLeading: false,
-            title: Text('Registered Workers (${workers.length})'),
+            title: Text(
+              'Registered Workers (${workers.length})',
+              style: const TextStyle(
+                color: AppColors.greenDeep,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
+            ),
           ),
           body: ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -716,10 +765,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: AppColors.primaryContainer,
+                      backgroundColor: AppColors.greenMint.withValues(alpha: 0.35),
                       child: Text(
                         w.fullName.isNotEmpty ? w.fullName[0].toUpperCase() : 'W',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.greenForest),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -729,7 +778,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         children: [
                           Text(
                             w.fullName,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.greenDeep),
                           ),
                           Text(
                             'Skill: ${w.serviceCategory ?? "General"} • ${w.experience ?? "N/A"}',
@@ -740,18 +789,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: w.verificationStatus == AppConstants.statusVerified
                             ? AppColors.statusVerifiedBg
                             : AppColors.statusPendingBg,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: (w.verificationStatus == AppConstants.statusVerified
+                                  ? AppColors.statusVerified
+                                  : AppColors.statusPending)
+                              .withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
-                        w.verificationStatus ?? 'Pending',
+                        (w.verificationStatus ?? 'Pending').toUpperCase(),
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
                           color: w.verificationStatus == AppConstants.statusVerified
                               ? AppColors.statusVerified
                               : AppColors.statusPending,
@@ -776,16 +831,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Column(
         children: [
           const SizedBox(height: 12),
-          const CircleAvatar(
-            radius: 40,
-            backgroundColor: AppColors.primaryContainer,
-            child: Icon(Icons.admin_panel_settings_rounded, size: 48, color: AppColors.primary),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.neuBorder, width: 2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.white,
+                  offset: Offset(-3, -3),
+                  blurRadius: 6,
+                ),
+                BoxShadow(
+                  color: Color(0x0C064E3B),
+                  offset: Offset(2, 4),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.admin_panel_settings_rounded, size: 44, color: AppColors.greenForest),
           ),
           const SizedBox(height: 12),
           Text(
             user?.fullName ?? 'Administrator',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.greenDeep),
           ),
           const SizedBox(height: 4),
           Text(
@@ -798,14 +870,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.security_rounded, color: AppColors.primary),
-                  title: const Text('System Role'),
+                  leading: const Icon(Icons.security_rounded, color: AppColors.greenForest),
+                  title: const Text('System Role', style: TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: const Text('Super Administrator (admin)'),
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.verified_user_outlined, color: AppColors.primary),
-                  title: const Text('Access Permissions'),
+                  leading: const Icon(Icons.verified_user_outlined, color: AppColors.greenForest),
+                  title: const Text('Access Permissions', style: TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: const Text('Full Platform Read/Write & User Assignment'),
                 ),
               ],
@@ -817,10 +889,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.statusErrorBg,
               foregroundColor: AppColors.statusError,
-              minimumSize: const Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 52),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 0,
             ),
             icon: const Icon(Icons.logout_rounded),
-            label: const Text('Sign Out'),
+            label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
           ),
         ],
       ),

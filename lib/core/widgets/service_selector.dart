@@ -73,28 +73,50 @@ class _ServiceSelectorState extends State<ServiceSelector> {
         ],
 
         // Search Field for Services
-        TextField(
-          controller: _searchController,
-          onChanged: (val) {
-            setState(() {
-              _searchQuery = val.trim().toLowerCase();
-            });
-          },
-          decoration: InputDecoration(
-            hintText: 'Search available services...',
-            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textSecondary),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 18),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                  )
-                : null,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.neuBorder, width: 1.2),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.white,
+                offset: Offset(-1, -1),
+                blurRadius: 3,
+              ),
+              BoxShadow(
+                color: Color(0x0A064E3B),
+                offset: Offset(1, 2),
+                blurRadius: 5,
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val.trim().toLowerCase();
+              });
+            },
+            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            decoration: InputDecoration(
+              hintText: 'Search available services...',
+              hintStyle: TextStyle(color: AppColors.textSecondary.withValues(alpha: 0.7), fontSize: 13),
+              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.greenForest),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textSecondary),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -113,8 +135,9 @@ class _ServiceSelectorState extends State<ServiceSelector> {
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF1F7F3),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.neuBorder, width: 1.2),
                 ),
                 child: Column(
                   children: const [
@@ -122,7 +145,7 @@ class _ServiceSelectorState extends State<ServiceSelector> {
                     SizedBox(height: 8),
                     Text(
                       'No Active Services Available',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.greenDeep),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -157,29 +180,29 @@ class _ServiceSelectorState extends State<ServiceSelector> {
             return Container(
               constraints: const BoxConstraints(maxHeight: 280),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.neuBorder, width: 1.2),
               ),
               child: ListView.separated(
                 shrinkWrap: true,
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 itemCount: filteredServices.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.neuBorder),
                 itemBuilder: (context, idx) {
                   final service = filteredServices[idx];
                   final isChecked = widget.selectedServiceIds.contains(service.id);
 
                   return CheckboxListTile(
                     value: isChecked,
-                    activeColor: AppColors.primary,
+                    activeColor: AppColors.greenForest,
                     dense: true,
                     title: Text(
                       service.name,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                        color: isChecked ? AppColors.primary : AppColors.textPrimary,
+                        color: isChecked ? AppColors.greenDeep : AppColors.textPrimary,
                       ),
                     ),
                     subtitle: Text(
